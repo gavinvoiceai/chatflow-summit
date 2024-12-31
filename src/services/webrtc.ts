@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { deviceManager } from "./deviceManager";
 
 interface PeerConnection {
   connection: RTCPeerConnection;
@@ -7,7 +8,6 @@ interface PeerConnection {
 
 export class WebRTCService {
   private peerConnections: Map<string, PeerConnection> = new Map();
-  private localStream: MediaStream | null = null;
   private onStreamUpdate: (streams: Map<string, MediaStream>) => void;
 
   constructor(onStreamUpdate: (streams: Map<string, MediaStream>) => void) {
@@ -24,15 +24,12 @@ export class WebRTCService {
 
     const connection = new RTCPeerConnection(config);
     
-    // Handle ICE candidates
     connection.onicecandidate = (event) => {
       if (event.candidate) {
-        // Send candidate to signaling server
         console.log('New ICE candidate:', event.candidate);
       }
     };
 
-    // Handle connection state changes
     connection.onconnectionstatechange = () => {
       console.log(`Connection state for ${participantId}:`, connection.connectionState);
       if (connection.connectionState === 'failed') {
@@ -41,7 +38,6 @@ export class WebRTCService {
       }
     };
 
-    // Handle incoming tracks
     connection.ontrack = (event) => {
       const streams = new Map<string, MediaStream>();
       this.peerConnections.forEach((peer, id) => {
@@ -58,27 +54,21 @@ export class WebRTCService {
   }
 
   async initializeLocalStream(): Promise<MediaStream> {
-    try {
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
-      return this.localStream;
-    } catch (error) {
-      console.error('Error accessing media devices:', error);
-      toast.error('Failed to access camera or microphone');
-      throw error;
+    const stream = deviceManager.getCurrentStream();
+    if (!stream) {
+      throw new Error('No media stream available');
     }
+    return stream;
   }
 
   async addPeer(participantId: string): Promise<void> {
     const connection = await this.setupPeerConnection(participantId);
+    const stream = deviceManager.getCurrentStream();
     
-    // Add local tracks to the connection
-    if (this.localStream) {
-      this.localStream.getTracks().forEach(track => {
-        if (this.localStream) {
-          connection.addTrack(track, this.localStream);
+    if (stream) {
+      stream.getTracks().forEach(track => {
+        if (stream) {
+          connection.addTrack(track, stream);
         }
       });
     }
@@ -113,10 +103,5 @@ export class WebRTCService {
       peer.connection.close();
     });
     this.peerConnections.clear();
-    
-    if (this.localStream) {
-      this.localStream.getTracks().forEach(track => track.stop());
-      this.localStream = null;
-    }
   }
 }

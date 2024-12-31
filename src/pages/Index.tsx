@@ -9,6 +9,7 @@ import { TranscriptionService, TranscriptionSegment } from '@/services/transcrip
 import { TranscriptPanel } from '@/components/TranscriptPanel';
 import { ClosedCaptions } from '@/components/ClosedCaptions';
 import { TranscriptionControls } from '@/components/TranscriptionControls';
+import { deviceManager } from '@/services/deviceManager';
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -20,7 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 
 type MeetingState = 'lobby' | 'connecting' | 'inProgress' | 'ending';
 
@@ -83,10 +83,14 @@ const Index = () => {
   const startMeeting = async () => {
     try {
       setMeetingState('connecting');
+      
+      // Initialize devices first
+      const stream = await deviceManager.initializeDevices();
+      
       await initializeServices();
       
       if (webrtcService) {
-        const stream = await webrtcService.initializeLocalStream();
+        await webrtcService.initializeLocalStream();
         setParticipants(prev => prev.map(p => 
           p.id === 'local' ? { ...p, stream, videoEnabled: true, audioEnabled: true } : p
         ));
@@ -104,6 +108,7 @@ const Index = () => {
   };
 
   const endMeeting = () => {
+    deviceManager.cleanup();
     webrtcService?.cleanup();
     transcriptionService?.stop();
     setMeetingState('lobby');
@@ -114,28 +119,20 @@ const Index = () => {
     toast.success("Meeting ended");
   };
 
-  const toggleAudio = () => {
-    if (participants[0].stream) {
-      participants[0].stream.getAudioTracks().forEach(track => {
-        track.enabled = !audioEnabled;
-      });
-      setAudioEnabled(!audioEnabled);
-      setParticipants(prev => prev.map(p => 
-        p.id === 'local' ? { ...p, audioEnabled: !audioEnabled } : p
-      ));
-    }
+  const toggleAudio = async () => {
+    await deviceManager.toggleAudio(!audioEnabled);
+    setAudioEnabled(!audioEnabled);
+    setParticipants(prev => prev.map(p => 
+      p.id === 'local' ? { ...p, audioEnabled: !audioEnabled } : p
+    ));
   };
 
-  const toggleVideo = () => {
-    if (participants[0].stream) {
-      participants[0].stream.getVideoTracks().forEach(track => {
-        track.enabled = !videoEnabled;
-      });
-      setVideoEnabled(!videoEnabled);
-      setParticipants(prev => prev.map(p => 
-        p.id === 'local' ? { ...p, videoEnabled: !videoEnabled } : p
-      ));
-    }
+  const toggleVideo = async () => {
+    await deviceManager.toggleVideo(!videoEnabled);
+    setVideoEnabled(!videoEnabled);
+    setParticipants(prev => prev.map(p => 
+      p.id === 'local' ? { ...p, videoEnabled: !videoEnabled } : p
+    ));
   };
 
   const toggleTranscription = useCallback(() => {
@@ -153,9 +150,27 @@ const Index = () => {
   }, [transcriptionService, isTranscribing]);
 
   useEffect(() => {
-    return () => {
+    const cleanup = () => {
+      deviceManager.cleanup();
       webrtcService?.cleanup();
       transcriptionService?.stop();
+    };
+
+    // Cleanup on component unmount
+    return cleanup;
+  }, [webrtcService, transcriptionService]);
+
+  // Handle page unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      deviceManager.cleanup();
+      webrtcService?.cleanup();
+      transcriptionService?.stop();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [webrtcService, transcriptionService]);
 
