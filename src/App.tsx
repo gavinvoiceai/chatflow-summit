@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Index from "@/pages/Index";
 import { MeetingSetupScreen } from '@/components/meeting';
 import { CreateJoinMeeting } from '@/components/meeting/CreateJoinMeeting';
+import { VideoConferenceScreen } from '@/components/meeting/VideoConferenceScreen';
 
 function App() {
   const queryClient = new QueryClient();
@@ -17,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/meeting/:meetingId" element={<MeetingSetupScreen />} />
+            <Route path="/meeting/:meetingId/conference" element={<VideoConferenceScreen />} />
             <Route path="/create-join-meeting" element={<CreateJoinMeeting />} />
           </Routes>
         </Router>

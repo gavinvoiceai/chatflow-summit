@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Video, VideoOff, Mic, MicOff, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { deviceManager } from '@/services/deviceManager';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const MeetingSetupScreen = () => {
   const { meetingId } = useParams();
+  const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
@@ -94,7 +95,8 @@ export const MeetingSetupScreen = () => {
           });
       }
 
-      window.location.reload(); // This will trigger the main meeting view
+      // Navigate to conference view
+      navigate(`/meeting/${meetingId}/conference`);
     } catch (error) {
       console.error('Failed to start meeting:', error);
       toast.error('Failed to start meeting');
