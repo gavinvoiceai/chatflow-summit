@@ -33,7 +33,35 @@
   }
   body {
     @apply bg-background text-foreground;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
   }
+}
+
+.main-container {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: 1fr auto;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.video-container {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.right-panel {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  border-left: 1px solid hsl(var(--border));
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .glass-panel {
@@ -42,15 +70,21 @@
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;
-  width: 100%;
   height: 100%;
+  width: 100%;
 }
 
 .participant-video {
-  @apply relative rounded-lg overflow-hidden aspect-video bg-secondary;
+  @apply relative rounded-lg overflow-hidden bg-secondary;
+  aspect-ratio: 16/9;
   transition: all 0.3s ease;
+}
+
+.main-speaker {
+  width: 100%;
+  height: 70%;
+  margin-bottom: 1rem;
 }
 
 .control-bar {

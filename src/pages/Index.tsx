@@ -115,36 +115,34 @@ const Index = () => {
   }, [voiceCommandsEnabled]);
 
   return (
-    <div className="min-h-screen flex">
-      <div className="flex-1 relative">
-        <VideoGrid participants={mockParticipants} />
-        
-        <VoiceCommandIndicator
-          isListening={isListening}
-          transcript={transcript}
-        />
-        
-        <ControlBar
-          audioEnabled={audioEnabled}
-          videoEnabled={videoEnabled}
-          voiceCommandsEnabled={voiceCommandsEnabled}
-          isListening={isListening}
-          onToggleAudio={() => setAudioEnabled(!audioEnabled)}
-          onToggleVideo={() => setVideoEnabled(!videoEnabled)}
-          onToggleVoiceCommands={() => setVoiceCommandsEnabled(!voiceCommandsEnabled)}
-          onShareScreen={() => console.log('Share screen')}
-          onOpenChat={() => console.log('Open chat')}
-          onOpenSettings={() => console.log('Open settings')}
-        />
-      </div>
+    <div className="main-container">
+      <VideoGrid participants={mockParticipants} />
       
-      <div className="w-[30%] border-l border-secondary glass-panel">
+      <div className="right-panel">
         <AIPanel
           transcript={mockTranscript}
           actionItems={mockActionItems}
           participants={mockParticipants}
         />
       </div>
+
+      <VoiceCommandIndicator
+        isListening={isListening}
+        transcript={transcript}
+      />
+      
+      <ControlBar
+        audioEnabled={audioEnabled}
+        videoEnabled={videoEnabled}
+        voiceCommandsEnabled={voiceCommandsEnabled}
+        isListening={isListening}
+        onToggleAudio={() => setAudioEnabled(!audioEnabled)}
+        onToggleVideo={() => setVideoEnabled(!videoEnabled)}
+        onToggleVoiceCommands={() => setVoiceCommandsEnabled(!voiceCommandsEnabled)}
+        onShareScreen={() => console.log('Share screen')}
+        onOpenChat={() => console.log('Open chat')}
+        onOpenSettings={() => console.log('Open settings')}
+      />
     </div>
   );
 };
