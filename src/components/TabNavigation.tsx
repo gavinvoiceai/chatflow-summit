@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 interface TabConfig {
   id: string;
   icon: React.ReactNode;
-  label: string;
   ariaLabel: string;
 }
 
@@ -13,19 +12,16 @@ const tabs: TabConfig[] = [
   {
     id: 'transcript',
     icon: <FileText className="h-5 w-5" />,
-    label: 'Transcript',
     ariaLabel: 'Transcript'
   },
   {
     id: 'actions',
     icon: <CheckSquare className="h-5 w-5" />,
-    label: 'Actions',
     ariaLabel: 'Actions'
   },
   {
     id: 'participants',
     icon: <Users className="h-5 w-5" />,
-    label: 'Participants',
     ariaLabel: 'Participants'
   }
 ];
@@ -46,7 +42,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={cn(
-            "tab-button flex items-center gap-2 px-4 py-2 rounded-md transition-colors",
+            "tab-button p-2 rounded-md transition-colors",
             "hover:bg-accent/10",
             activeTab === tab.id && "bg-accent/10 text-accent"
           )}
@@ -54,7 +50,6 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
           aria-selected={activeTab === tab.id}
         >
           {tab.icon}
-          <span className="text-sm font-medium">{tab.label}</span>
         </button>
       ))}
     </div>

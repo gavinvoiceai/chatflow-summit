@@ -95,16 +95,18 @@ export const VideoConferenceScreen = () => {
 
   return (
     <div className="relative h-screen bg-background overflow-hidden">
-      {/* End Meeting Button - Fixed position */}
-      <Button
-        variant="destructive"
-        size="sm"
-        className="absolute top-4 right-4 z-50 md:right-[336px]"
-        onClick={handleEndMeeting}
-      >
-        <X className="h-4 w-4 mr-2" />
-        End Meeting
-      </Button>
+      {/* End Meeting Button - Only show on mobile */}
+      {isMobile && (
+        <Button
+          variant="destructive"
+          size="sm"
+          className="absolute top-4 right-4 z-50"
+          onClick={handleEndMeeting}
+        >
+          <X className="h-4 w-4 mr-2" />
+          End Meeting
+        </Button>
+      )}
 
       <div className="flex h-full">
         {/* Main Content Area */}

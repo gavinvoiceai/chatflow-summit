@@ -1,21 +1,13 @@
 .control-bar {
   @apply flex items-center justify-center gap-4 p-4 rounded-full bg-muted/80 backdrop-blur-sm border border-border/10 mx-auto;
-  max-width: fit-content;
+  max-width: max-content;
 }
 
 .control-button {
   @apply p-2 rounded-full hover:bg-accent/10 transition-colors duration-200;
 }
 
-.end-meeting-button {
-  @apply fixed top-4 right-4 z-50;
-}
-
 @media (min-width: 768px) {
-  .end-meeting-button {
-    @apply right-[336px];
-  }
-  
   .control-bar {
     @apply w-auto;
   }
