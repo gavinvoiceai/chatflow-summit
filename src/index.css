@@ -54,7 +54,7 @@
 }
 
 .control-bar {
-  @apply fixed bottom-6 left-1/2 -translate-x-1/2 glass-panel rounded-full px-6 py-3 flex items-center gap-4;
+  @apply fixed bottom-6 left-1/2 -translate-x-1/2 glass-panel rounded-full px-6 py-3 flex items-center gap-4 z-50;
   animation: slide-up 0.3s ease-out;
 }
 
@@ -67,4 +67,17 @@
     transform: translate(-50%, 0);
     opacity: 1;
   }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

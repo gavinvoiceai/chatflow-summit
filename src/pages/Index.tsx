@@ -32,7 +32,6 @@ const Index = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
 
-  // Voice recognition setup
   useEffect(() => {
     if (!voiceCommandsEnabled) return;
 
@@ -45,6 +44,10 @@ const Index = () => {
 
       recognition.onstart = () => {
         setIsListening(true);
+        toast({
+          title: "Voice Commands Active",
+          description: "Say 'Magic' followed by your command",
+        });
       };
 
       recognition.onresult = (event) => {
@@ -55,15 +58,40 @@ const Index = () => {
         
         setTranscript(transcript);
 
-        // Check for trigger word
+        // Process voice commands
         if (transcript.toLowerCase().includes('magic')) {
-          processVoiceCommand(transcript);
+          const command = transcript.toLowerCase().split('magic')[1].trim();
+          
+          if (command.startsWith('create task')) {
+            const task = command.replace('create task', '').trim();
+            toast({
+              title: "New Task Created",
+              description: task,
+            });
+          } else if (command.startsWith('schedule meeting')) {
+            const details = command.replace('schedule meeting', '').trim();
+            toast({
+              title: "Meeting Scheduled",
+              description: details,
+            });
+          } else if (command.startsWith('send summary')) {
+            const recipient = command.replace('send summary', '').trim();
+            toast({
+              title: "Summary Sent",
+              description: `Summary sent to ${recipient}`,
+            });
+          }
         }
       };
 
       recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
+        toast({
+          title: "Voice Command Error",
+          description: "Failed to process voice command",
+          variant: "destructive",
+        });
       };
 
       recognition.onend = () => {
@@ -74,7 +102,7 @@ const Index = () => {
     } else {
       toast({
         title: "Voice Commands Unavailable",
-        description: "Your browser doesn't support voice recognition.",
+        description: "Your browser doesn't support voice recognition",
         variant: "destructive",
       });
     }
@@ -85,26 +113,6 @@ const Index = () => {
       }
     };
   }, [voiceCommandsEnabled]);
-
-  const processVoiceCommand = (command: string) => {
-    // Basic command processing
-    if (command.includes('create task')) {
-      toast({
-        title: "New Task",
-        description: "Task created from voice command",
-      });
-    } else if (command.includes('schedule meeting')) {
-      toast({
-        title: "Meeting Scheduled",
-        description: "Meeting scheduled from voice command",
-      });
-    } else if (command.includes('set reminder')) {
-      toast({
-        title: "Reminder Set",
-        description: "Reminder created from voice command",
-      });
-    }
-  };
 
   return (
     <div className="min-h-screen flex">
@@ -120,6 +128,7 @@ const Index = () => {
           audioEnabled={audioEnabled}
           videoEnabled={videoEnabled}
           voiceCommandsEnabled={voiceCommandsEnabled}
+          isListening={isListening}
           onToggleAudio={() => setAudioEnabled(!audioEnabled)}
           onToggleVideo={() => setVideoEnabled(!videoEnabled)}
           onToggleVoiceCommands={() => setVoiceCommandsEnabled(!voiceCommandsEnabled)}

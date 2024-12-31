@@ -7,6 +7,7 @@ interface ControlBarProps {
   audioEnabled: boolean;
   videoEnabled: boolean;
   voiceCommandsEnabled: boolean;
+  isListening?: boolean;
   onToggleAudio: () => void;
   onToggleVideo: () => void;
   onToggleVoiceCommands: () => void;
@@ -19,6 +20,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
   audioEnabled,
   videoEnabled,
   voiceCommandsEnabled,
+  isListening,
   onToggleAudio,
   onToggleVideo,
   onToggleVoiceCommands,
@@ -72,10 +74,13 @@ export const ControlBar: React.FC<ControlBarProps> = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="ghost"
+            variant={voiceCommandsEnabled ? "default" : "ghost"}
             size="icon"
             onClick={onToggleVoiceCommands}
-            className={voiceCommandsEnabled ? 'text-primary' : ''}
+            className={cn(
+              voiceCommandsEnabled && "bg-primary text-primary-foreground",
+              isListening && "animate-pulse"
+            )}
           >
             <Bot className="h-5 w-5" />
           </Button>
