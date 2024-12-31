@@ -67,8 +67,8 @@ export class VoiceCommandService {
         const task = commandText.replace('create task', '').trim();
         await this.aiAssistant.createTask(task);
         this.onCommand({ type: 'createTask', payload: task });
-      } else if (commandText.startsWith('schedule meeting')) {
-        const details = commandText.replace('schedule meeting', '').trim();
+      } else if (commandText.startsWith('schedule')) {
+        const details = commandText.replace('schedule', '').trim();
         await this.aiAssistant.scheduleFollowup(details);
         this.onCommand({ type: 'scheduleFollowup', payload: details });
       } else if (commandText.startsWith('summarize')) {

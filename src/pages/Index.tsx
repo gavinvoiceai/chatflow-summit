@@ -44,14 +44,11 @@ const Index = () => {
       case 'createTask':
         toast.success(`Created task: ${command.payload}`);
         break;
-      case 'scheduleMeeting':
+      case 'scheduleFollowup':
         toast.success(`Scheduled meeting: ${command.payload}`);
         break;
-      case 'setReminder':
-        toast.success(`Set reminder: ${command.payload}`);
-        break;
-      case 'shareDocument':
-        toast.success(`Sharing document: ${command.payload}`);
+      case 'summarize':
+        toast.success(`Generated summary: ${command.payload}`);
         break;
     }
   }, []);
@@ -59,8 +56,9 @@ const Index = () => {
   const initializeServices = useCallback(async () => {
     const webrtc = new WebRTCService(handleStreamUpdate);
     const voice = new VoiceCommandService(
+      'meeting-id', // TODO: Replace with actual meeting ID
       handleVoiceCommand,
-      (text) => setTranscript(text)
+      setTranscript
     );
     
     setWebrtcService(webrtc);
