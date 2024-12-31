@@ -47,7 +47,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type your message..."
-          className="w-full bg-background/50 border-accent/20 focus:border-accent/50 focus:ring-accent/20 focus:shadow-[0_0_15px_rgba(0,255,157,0.2)] transition-all duration-200"
+          className="w-full bg-background/50 border-accent/20 focus:border-accent/50 focus:ring-accent/20 focus:shadow-[0_0_15px_rgba(0,255,157,0.2)] transition-all duration-200 text-foreground placeholder:text-muted-foreground"
         />
       </form>
     </div>
