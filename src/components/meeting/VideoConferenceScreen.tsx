@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { VideoGrid } from '@/components/VideoGrid';
 import { MeetingControls } from './MeetingControls';
-import { Sidebar } from '@/components/Sidebar';
 import { useParams, useNavigate } from 'react-router-dom';
 import { deviceManager } from '@/services/deviceManager';
 import { toast } from 'sonner';
@@ -19,8 +18,6 @@ export const VideoConferenceScreen = () => {
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showCaptions, setShowCaptions] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
-  const [activeTab, setActiveTab] = useState('transcript');
 
   useEffect(() => {
     const initializeStream = async () => {
@@ -40,7 +37,6 @@ export const VideoConferenceScreen = () => {
 
     return () => {
       if (localStream) {
-        console.log('Cleaning up media streams');
         localStream.getTracks().forEach(track => track.stop());
       }
     };
@@ -94,55 +90,54 @@ export const VideoConferenceScreen = () => {
   ] : [];
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background">
       <div className="flex-1 relative">
         <ErrorBoundary>
-          <div className="h-full pb-24 md:pb-20">
+          <div className="h-full">
             <VideoGrid participants={participants} />
           </div>
         </ErrorBoundary>
         
-        <div className="controls-container">
-          <div className="control-bar">
-            <MeetingControls
-              audioEnabled={audioEnabled}
-              videoEnabled={videoEnabled}
-              isTranscribing={isTranscribing}
-              showCaptions={showCaptions}
-              onToggleAudio={handleToggleAudio}
-              onToggleVideo={handleToggleVideo}
-              onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
-              onToggleCaptions={() => setShowCaptions(!showCaptions)}
-              onShareScreen={handleShareScreen}
-              onEndMeeting={handleEndMeeting}
-            />
-          </div>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <MeetingControls
+            audioEnabled={audioEnabled}
+            videoEnabled={videoEnabled}
+            isTranscribing={isTranscribing}
+            showCaptions={showCaptions}
+            onToggleAudio={handleToggleAudio}
+            onToggleVideo={handleToggleVideo}
+            onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
+            onToggleCaptions={() => setShowCaptions(!showCaptions)}
+            onShareScreen={handleShareScreen}
+            onEndMeeting={handleEndMeeting}
+          />
         </div>
       </div>
 
-      <div className="w-80 border-l border-border/10 bg-background/95">
-        <Tabs defaultValue="transcript" className="h-full">
-          <TabsList className="w-full justify-start px-2 border-b border-border/10">
-            <TabsTrigger value="transcript">Transcript</TabsTrigger>
-            <TabsTrigger value="actions">Actions</TabsTrigger>
-            <TabsTrigger value="participants">Participants</TabsTrigger>
-          </TabsList>
+      {!isMobile && (
+        <div className="w-80 border-l border-border/10 bg-background/95 backdrop-blur-sm">
+          <Tabs defaultValue="transcript" className="h-full">
+            <TabsList className="w-full justify-start px-2 border-b border-border/10">
+              <TabsTrigger value="transcript">Transcript</TabsTrigger>
+              <TabsTrigger value="actions">Actions</TabsTrigger>
+              <TabsTrigger value="participants">Participants</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="transcript" className="h-[calc(100%-48px)]">
-            <TranscriptPanel 
-              transcripts={[]} 
-              autoScroll={true}
-            />
-          </TabsContent>
-          <TabsContent value="actions" className="h-[calc(100%-48px)]">
-            {/* Action items panel will be implemented separately */}
-            <div className="p-4">Action Items</div>
-          </TabsContent>
-          <TabsContent value="participants" className="h-[calc(100%-48px)]">
-            <div className="p-4">Participants</div>
-          </TabsContent>
-        </Tabs>
-      </div>
+            <TabsContent value="transcript" className="h-[calc(100%-48px)] overflow-y-auto">
+              <TranscriptPanel 
+                transcripts={[]} 
+                autoScroll={true}
+              />
+            </TabsContent>
+            <TabsContent value="actions" className="h-[calc(100%-48px)] overflow-y-auto">
+              <div className="p-4">Action Items</div>
+            </TabsContent>
+            <TabsContent value="participants" className="h-[calc(100%-48px)] overflow-y-auto">
+              <div className="p-4">Participants</div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
     </div>
   );
 };
