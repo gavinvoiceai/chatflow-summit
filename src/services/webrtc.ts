@@ -6,27 +6,35 @@ interface PeerConnection {
   stream: MediaStream | null;
 }
 
+const webRTCConfig: RTCConfiguration = {
+  iceServers: [
+    {
+      urls: [
+        'stun:stun1.l.google.com:19302',
+        'stun:stun2.l.google.com:19302'
+      ]
+    }
+  ],
+  iceCandidatePoolSize: 10
+};
+
 export class WebRTCService {
   private peerConnections: Map<string, PeerConnection> = new Map();
   private onStreamUpdate: (streams: Map<string, MediaStream>) => void;
+  private localStream: MediaStream | null = null;
 
   constructor(onStreamUpdate: (streams: Map<string, MediaStream>) => void) {
     this.onStreamUpdate = onStreamUpdate;
   }
 
   private async setupPeerConnection(participantId: string): Promise<RTCPeerConnection> {
-    const config = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-      ]
-    };
-
-    const connection = new RTCPeerConnection(config);
+    const connection = new RTCPeerConnection(webRTCConfig);
     
     connection.onicecandidate = (event) => {
       if (event.candidate) {
         console.log('New ICE candidate:', event.candidate);
+        // Here you would send the candidate to the remote peer
+        // through your signaling server
       }
     };
 
@@ -50,12 +58,33 @@ export class WebRTCService {
       this.onStreamUpdate(streams);
     };
 
+    // Add local tracks to the connection
+    if (this.localStream) {
+      this.localStream.getTracks().forEach(track => {
+        if (this.localStream) {
+          connection.addTrack(track, this.localStream);
+        }
+      });
+    }
+
     return connection;
   }
 
   async initializeLocalStream(): Promise<MediaStream> {
     try {
       const stream = await deviceManager.initializeDevices();
+      this.localStream = stream;
+      
+      // Update existing peer connections with the new stream
+      this.peerConnections.forEach(async (peer, participantId) => {
+        const newConnection = await this.setupPeerConnection(participantId);
+        peer.connection.close();
+        this.peerConnections.set(participantId, {
+          connection: newConnection,
+          stream: peer.stream
+        });
+      });
+
       return stream;
     } catch (error) {
       console.error('Failed to initialize local stream:', error);
@@ -67,17 +96,11 @@ export class WebRTCService {
   async addPeer(participantId: string): Promise<void> {
     try {
       const connection = await this.setupPeerConnection(participantId);
-      const stream = deviceManager.getCurrentStream();
-      
-      if (stream) {
-        stream.getTracks().forEach(track => {
-          if (stream) {
-            connection.addTrack(track, stream);
-          }
-        });
-      }
-
       this.peerConnections.set(participantId, { connection, stream: null });
+      
+      // Here you would implement the signaling logic to exchange
+      // connection information with the remote peer
+      console.log(`Peer ${participantId} added to connection pool`);
     } catch (error) {
       console.error('Failed to add peer:', error);
       toast.error("Failed to connect with participant");
@@ -90,6 +113,7 @@ export class WebRTCService {
     if (peer) {
       peer.connection.close();
       this.peerConnections.delete(participantId);
+      console.log(`Peer ${participantId} removed from connection pool`);
     }
   }
 
@@ -99,6 +123,18 @@ export class WebRTCService {
         video: true,
         audio: true
       });
+
+      // Replace tracks in all peer connections
+      this.peerConnections.forEach(peer => {
+        const senders = peer.connection.getSenders();
+        screenStream.getTracks().forEach(track => {
+          const sender = senders.find(s => s.track?.kind === track.kind);
+          if (sender) {
+            sender.replaceTrack(track);
+          }
+        });
+      });
+
       return screenStream;
     } catch (error) {
       console.error('Error sharing screen:', error);
@@ -108,10 +144,18 @@ export class WebRTCService {
   }
 
   cleanup(): void {
+    // Stop all tracks in the local stream
+    if (this.localStream) {
+      this.localStream.getTracks().forEach(track => track.stop());
+      this.localStream = null;
+    }
+
+    // Close all peer connections
     this.peerConnections.forEach((peer) => {
       peer.connection.close();
     });
     this.peerConnections.clear();
-    deviceManager.cleanup();
+    
+    console.log('WebRTC service cleaned up');
   }
 }
