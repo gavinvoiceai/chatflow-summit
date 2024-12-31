@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, MicOff, Video, VideoOff, Monitor, MessageSquare, Bot, Settings } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Monitor, MessageSquare, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -39,7 +39,11 @@ export const ControlBar: React.FC<ControlBarProps> = ({
             variant="ghost"
             size="icon"
             onClick={onToggleAudio}
-            className={!audioEnabled ? 'text-destructive' : ''}
+            className={cn(
+              "control-button",
+              !audioEnabled && "text-destructive",
+              audioEnabled && "active"
+            )}
           >
             {audioEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
           </Button>
@@ -55,7 +59,11 @@ export const ControlBar: React.FC<ControlBarProps> = ({
             variant="ghost"
             size="icon"
             onClick={onToggleVideo}
-            className={!videoEnabled ? 'text-destructive' : ''}
+            className={cn(
+              "control-button",
+              !videoEnabled && "text-destructive",
+              videoEnabled && "active"
+            )}
           >
             {videoEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
           </Button>
@@ -67,7 +75,12 @@ export const ControlBar: React.FC<ControlBarProps> = ({
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={onShareScreen}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onShareScreen}
+            className="control-button"
+          >
             <Monitor className="h-5 w-5" />
           </Button>
         </TooltipTrigger>
@@ -76,26 +89,12 @@ export const ControlBar: React.FC<ControlBarProps> = ({
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant={voiceCommandsEnabled ? "default" : "ghost"}
-            size="icon"
-            onClick={onToggleVoiceCommands}
-            className={cn(
-              voiceCommandsEnabled && "bg-primary text-primary-foreground",
-              isListening && "animate-pulse"
-            )}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onOpenChat}
+            className="control-button"
           >
-            <Bot className="h-5 w-5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {voiceCommandsEnabled ? 'Disable voice commands' : 'Enable voice commands'}
-        </TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={onOpenChat}>
             <MessageSquare className="h-5 w-5" />
           </Button>
         </TooltipTrigger>
@@ -104,7 +103,12 @@ export const ControlBar: React.FC<ControlBarProps> = ({
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={onOpenSettings}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onOpenSettings}
+            className="control-button"
+          >
             <Settings className="h-5 w-5" />
           </Button>
         </TooltipTrigger>

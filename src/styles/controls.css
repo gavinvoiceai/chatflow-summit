@@ -4,15 +4,30 @@
 }
 
 .control-bar {
-  @apply flex items-center justify-center gap-4 px-6 py-3 rounded-full bg-background/80 backdrop-blur-sm border border-border/10;
+  @apply flex items-center justify-center gap-4 px-6 py-3 rounded-full;
+  background-color: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .control-button {
-  @apply p-2 rounded-full hover:bg-accent/10 transition-colors duration-200;
+  @apply p-2 rounded-full transition-all duration-200;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.control-button:hover {
+  @apply bg-accent/10;
+  box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+}
+
+.control-button.active {
+  @apply text-primary;
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
 }
 
 .end-meeting-button {
   @apply ml-4 bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 py-2 rounded-full;
+  box-shadow: 0 0 15px rgba(255, 67, 101, 0.2);
 }
 
 @media (max-width: 767px) {
