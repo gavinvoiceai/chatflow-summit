@@ -31,24 +31,26 @@ export const MeetingControls: React.FC<MeetingControlsProps> = ({
 }) => {
   return (
     <div className="controls-container">
-      <ControlBar
-        audioEnabled={audioEnabled}
-        videoEnabled={videoEnabled}
-        voiceCommandsEnabled={false}
-        isListening={false}
-        onToggleAudio={onToggleAudio}
-        onToggleVideo={onToggleVideo}
-        onToggleVoiceCommands={() => {}}
-        onShareScreen={onShareScreen}
-        onOpenChat={() => {}}
-        onOpenSettings={() => {}}
-      >
-        <TranscriptionControls
-          isTranscribing={isTranscribing}
-          showCaptions={showCaptions}
-          onToggleTranscription={onToggleTranscription}
-          onToggleCaptions={onToggleCaptions}
-        />
+      <div className="control-bar">
+        <ControlBar
+          audioEnabled={audioEnabled}
+          videoEnabled={videoEnabled}
+          voiceCommandsEnabled={false}
+          isListening={false}
+          onToggleAudio={onToggleAudio}
+          onToggleVideo={onToggleVideo}
+          onToggleVoiceCommands={() => {}}
+          onShareScreen={onShareScreen}
+          onOpenChat={() => {}}
+          onOpenSettings={() => {}}
+        >
+          <TranscriptionControls
+            isTranscribing={isTranscribing}
+            showCaptions={showCaptions}
+            onToggleTranscription={onToggleTranscription}
+            onToggleCaptions={onToggleCaptions}
+          />
+        </ControlBar>
         <Button
           variant="destructive"
           size="icon"
@@ -57,7 +59,7 @@ export const MeetingControls: React.FC<MeetingControlsProps> = ({
         >
           <X className="h-5 w-5" />
         </Button>
-      </ControlBar>
+      </div>
     </div>
   );
 };
