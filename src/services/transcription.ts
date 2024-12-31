@@ -43,10 +43,10 @@ export class TranscriptionService {
   }
 
   private async handleSpeechResult(event: SpeechRecognitionEvent) {
-    const results = event.results;
+    const results = Array.from(event.results);
     const currentSpeaker = 'User'; // TODO: Implement speaker detection
 
-    for (let i = event.resultIndex; i < results.length; i++) {
+    for (let i = 0; i < results.length; i++) {
       const transcript = results[i][0].transcript;
       const isFinal = results[i].isFinal;
 
@@ -79,7 +79,7 @@ export class TranscriptionService {
           meeting_id: this.currentMeetingId,
           speaker_id: segment.speaker,
           content: segment.content,
-          timestamp: segment.timestamp
+          timestamp: segment.timestamp.toISOString()
         });
 
       if (error) throw error;

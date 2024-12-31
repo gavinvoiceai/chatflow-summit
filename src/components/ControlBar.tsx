@@ -15,6 +15,7 @@ interface ControlBarProps {
   onShareScreen: () => void;
   onOpenChat: () => void;
   onOpenSettings: () => void;
+  children?: React.ReactNode;
 }
 
 export const ControlBar: React.FC<ControlBarProps> = ({
@@ -28,6 +29,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
   onShareScreen,
   onOpenChat,
   onOpenSettings,
+  children
 }) => {
   return (
     <div className="control-bar">
@@ -108,6 +110,8 @@ export const ControlBar: React.FC<ControlBarProps> = ({
         </TooltipTrigger>
         <TooltipContent>Settings</TooltipContent>
       </Tooltip>
+
+      {children}
     </div>
   );
 };

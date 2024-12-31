@@ -39,6 +39,14 @@ const Index = () => {
   const [showCaptions, setShowCaptions] = useState(true);
   const [transcriptionService, setTranscriptionService] = useState<TranscriptionService | null>(null);
 
+  const handleTranscriptUpdate = useCallback((segment: TranscriptionSegment) => {
+    setTranscripts(prev => [...prev, segment]);
+  }, []);
+
+  const handleCaptionUpdate = useCallback((text: string, speaker: string) => {
+    setCurrentCaption({ text, speaker });
+  }, []);
+
   const handleStreamUpdate = useCallback((streams: Map<string, MediaStream>) => {
     setParticipants(prev => prev.map(p => ({
       ...p,
@@ -71,14 +79,6 @@ const Index = () => {
     );
     setTranscriptionService(transcription);
   }, [handleStreamUpdate, handleTranscriptUpdate, handleCaptionUpdate]);
-
-  const handleTranscriptUpdate = useCallback((segment: TranscriptionSegment) => {
-    setTranscripts(prev => [...prev, segment]);
-  }, []);
-
-  const handleCaptionUpdate = useCallback((text: string, speaker: string) => {
-    setCurrentCaption({ text, speaker });
-  }, []);
 
   const startMeeting = async () => {
     try {

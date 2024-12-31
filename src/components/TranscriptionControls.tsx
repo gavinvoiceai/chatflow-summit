@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Subtitles, SubtitlesOff } from 'lucide-react';
+import { Mic, MicOff, Subtitles } from 'lucide-react';
 
 interface TranscriptionControlsProps {
   isTranscribing: boolean;
@@ -31,7 +31,7 @@ export const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
         onClick={onToggleCaptions}
         className={showCaptions ? 'text-primary' : 'text-muted-foreground'}
       >
-        {showCaptions ? <Subtitles className="h-5 w-5" /> : <SubtitlesOff className="h-5 w-5" />}
+        <Subtitles className={`h-5 w-5 ${!showCaptions ? 'opacity-50' : ''}`} />
       </Button>
     </div>
   );
