@@ -32,8 +32,8 @@ export const ControlBar: React.FC<ControlBarProps> = ({
   children
 }) => {
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-black/80 backdrop-blur-sm border border-border/10">
+    <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50">
+      <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-black/80 backdrop-blur-sm border border-accent/20">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
