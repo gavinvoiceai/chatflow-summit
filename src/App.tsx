@@ -1,25 +1,29 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Index from "@/pages/Index";
 import { MeetingSetupScreen } from '@/components/meeting';
-import { VideoGrid } from '@/components/VideoGrid';
-import { PreMeetingSetup } from '@/components/meeting/PreMeetingSetup';
-import { EndMeetingDialog } from '@/components/meeting/EndMeetingDialog';
 import { CreateJoinMeeting } from '@/components/meeting/CreateJoinMeeting';
-import { LobbyView } from '@/components/meeting/LobbyView';
-import { MeetingControls } from '@/components/meeting/MeetingControls';
 
 function App() {
+  const queryClient = new QueryClient();
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<PreMeetingSetup onJoinMeeting={async () => {}} />} />
-        <Route path="/meeting/:meetingId" element={<MeetingSetupScreen />} />
-        <Route path="/video-grid" element={<VideoGrid participants={[]} />} />
-        <Route path="/end-meeting" element={<EndMeetingDialog />} />
-        <Route path="/create-join-meeting" element={<CreateJoinMeeting />} />
-        <Route path="/lobby" element={<LobbyView />} />
-        <Route path="/meeting-controls" element={<MeetingControls />} />
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/meeting/:meetingId" element={<MeetingSetupScreen />} />
+            <Route path="/create-join-meeting" element={<CreateJoinMeeting />} />
+          </Routes>
+        </Router>
+        <Toaster />
+        <Sonner />
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
