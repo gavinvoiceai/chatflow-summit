@@ -5,6 +5,10 @@ import { Sidebar } from '@/components/Sidebar';
 import { WebRTCService } from '@/services/webrtc';
 import { VoiceCommand } from '@/services/voiceCommands';
 import { VoiceCommandManager } from '@/components/VoiceCommandManager';
+import { TranscriptionService, TranscriptionSegment } from '@/services/transcription';
+import { TranscriptPanel } from '@/components/TranscriptPanel';
+import { ClosedCaptions } from '@/components/ClosedCaptions';
+import { TranscriptionControls } from '@/components/TranscriptionControls';
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -29,6 +33,11 @@ const Index = () => {
     { id: 'local', name: 'You', stream: null, videoEnabled: false, audioEnabled: false, isMainSpeaker: true }
   ]);
   const [webrtcService, setWebrtcService] = useState<WebRTCService | null>(null);
+  const [transcripts, setTranscripts] = useState<TranscriptionSegment[]>([]);
+  const [currentCaption, setCurrentCaption] = useState({ text: '', speaker: '' });
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [showCaptions, setShowCaptions] = useState(true);
+  const [transcriptionService, setTranscriptionService] = useState<TranscriptionService | null>(null);
 
   const handleStreamUpdate = useCallback((streams: Map<string, MediaStream>) => {
     setParticipants(prev => prev.map(p => ({
@@ -54,7 +63,22 @@ const Index = () => {
   const initializeServices = useCallback(async () => {
     const webrtc = new WebRTCService(handleStreamUpdate);
     setWebrtcService(webrtc);
-  }, [handleStreamUpdate]);
+
+    const transcription = new TranscriptionService(
+      'meeting-id', // TODO: Replace with actual meeting ID
+      handleTranscriptUpdate,
+      handleCaptionUpdate
+    );
+    setTranscriptionService(transcription);
+  }, [handleStreamUpdate, handleTranscriptUpdate, handleCaptionUpdate]);
+
+  const handleTranscriptUpdate = useCallback((segment: TranscriptionSegment) => {
+    setTranscripts(prev => [...prev, segment]);
+  }, []);
+
+  const handleCaptionUpdate = useCallback((text: string, speaker: string) => {
+    setCurrentCaption({ text, speaker });
+  }, []);
 
   const startMeeting = async () => {
     try {
@@ -81,6 +105,7 @@ const Index = () => {
 
   const endMeeting = () => {
     webrtcService?.cleanup();
+    transcriptionService?.stop();
     setMeetingState('lobby');
     setShowEndDialog(false);
     setParticipants([
@@ -113,11 +138,26 @@ const Index = () => {
     }
   };
 
+  const toggleTranscription = useCallback(() => {
+    if (!transcriptionService) return;
+
+    if (isTranscribing) {
+      transcriptionService.stop();
+      setIsTranscribing(false);
+      toast.success("Transcription stopped");
+    } else {
+      transcriptionService.start();
+      setIsTranscribing(true);
+      toast.success("Transcription started");
+    }
+  }, [transcriptionService, isTranscribing]);
+
   useEffect(() => {
     return () => {
       webrtcService?.cleanup();
+      transcriptionService?.stop();
     };
-  }, [webrtcService]);
+  }, [webrtcService, transcriptionService]);
 
   if (meetingState === 'lobby') {
     return (
@@ -138,6 +178,13 @@ const Index = () => {
     <div className="conference-container">
       <div className="flex-1 relative pr-[300px]">
         <VideoGrid participants={participants} />
+        
+        {showCaptions && (
+          <ClosedCaptions
+            text={currentCaption.text}
+            speaker={currentCaption.speaker}
+          />
+        )}
         
         <VoiceCommandManager
           meetingId="meeting-id" // TODO: Replace with actual meeting ID
@@ -169,7 +216,14 @@ const Index = () => {
             onOpenSettings={() => {
               toast.info("Settings coming soon");
             }}
-          />
+          >
+            <TranscriptionControls
+              isTranscribing={isTranscribing}
+              showCaptions={showCaptions}
+              onToggleTranscription={toggleTranscription}
+              onToggleCaptions={() => setShowCaptions(!showCaptions)}
+            />
+          </ControlBar>
           
           <Button
             variant="destructive"
@@ -181,7 +235,12 @@ const Index = () => {
         </div>
       </div>
 
-      <Sidebar />
+      <Sidebar>
+        <TranscriptPanel
+          transcripts={transcripts}
+          autoScroll={true}
+        />
+      </Sidebar>
 
       <AlertDialog open={showEndDialog} onOpenChange={setShowEndDialog}>
         <AlertDialogContent>
