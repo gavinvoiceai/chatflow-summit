@@ -1,0 +1,34 @@
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.conference-container {
+  @apply flex flex-col h-screen bg-background text-foreground;
+}
+
+.video-grid {
+  @apply flex flex-col gap-4 p-4;
+}
+
+.video-container {
+  @apply relative bg-card rounded-lg overflow-hidden border border-secondary/10 transition-all duration-300;
+  aspect-ratio: 16/9;
+}
+
+.video-container.speaking {
+  @apply border-primary shadow-[0_0_15px_rgba(0,255,157,0.2)];
+}
+
+.main-speaker {
+  @apply w-full max-h-[60vh] mb-4;
+}
+
+.secondary-container {
+  @apply grid gap-4;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}

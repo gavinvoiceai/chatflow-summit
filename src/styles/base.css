@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    /* Base Colors */
+    --bg-primary: #0A0A0A;
+    --bg-secondary: #141414;
+    --bg-elevated: #1A1A1A;
+    
+    /* Accent Colors */
+    --accent-green: #00FF9D;
+    --accent-blue: #00E5FF;
+    --accent-red: #FF4365;
+    
+    /* Text Colors */
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    
+    /* Shadcn Variables */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 157 100% 50%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 190 100% 50%;
+    --secondary-foreground: 0 0% 4%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 157 100% 50%;
+    --accent-foreground: 0 0% 4%;
+    --destructive: 347 100% 63%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 190 100% 50%;
+    --input: 190 100% 50%;
+    --ring: 157 100% 50%;
+    --radius: 0.5rem;
+  }
+}

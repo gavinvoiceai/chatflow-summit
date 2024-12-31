@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Text, CheckSquare, Users } from 'lucide-react';
-import { ParticipantList } from './ParticipantList';
+import { TabNavigation } from './TabNavigation';
 import { Input } from './ui/input';
+import { Users } from 'lucide-react';
 
 interface TabProps {
   id: string;
@@ -11,20 +11,10 @@ interface TabProps {
   onClick: () => void;
 }
 
-const Tab: React.FC<TabProps> = ({ label, icon, isActive, onClick }) => (
-  <button
-    className={`tab-button flex items-center gap-2 ${isActive ? 'active' : ''}`}
-    onClick={onClick}
-  >
-    {icon}
-    <span>{label}</span>
-  </button>
-);
-
 const TranscriptPanel = () => (
   <div className="space-y-4">
     <div className="transcript-message">
-      <span className="timestamp text-xs">10:30 AM</span>
+      <span className="text-xs text-accent-blue">10:30 AM</span>
       <p className="mt-1">Welcome to the meeting!</p>
     </div>
   </div>
@@ -39,52 +29,50 @@ const ActionPanel = () => (
   </div>
 );
 
-export const Sidebar = () => {
-  const [activeTab, setActiveTab] = useState('participants');
-  
-  const tabs = [
-    {
-      id: 'transcript',
-      label: 'Transcript',
-      icon: <Text className="w-4 h-4" />,
-      content: TranscriptPanel
-    },
-    {
-      id: 'actions',
-      label: 'Actions',
-      icon: <CheckSquare className="w-4 h-4" />,
-      content: ActionPanel
-    },
-    {
-      id: 'participants',
-      label: 'Participants',
-      icon: <Users className="w-4 h-4" />,
-      content: ParticipantList
-    }
-  ];
+const ParticipantPanel = () => (
+  <div className="glass-panel rounded-lg p-4 w-64">
+    <div className="flex items-center gap-2 mb-4">
+      <Users className="h-5 w-5 text-primary" />
+      <h2 className="font-medium">Participants</h2>
+    </div>
+    <div className="space-y-2">
+      {/* Example participants, replace with actual data */}
+      <div className="flex items-center justify-between">
+        <span className="text-sm">You</span>
+        <span className="text-xs text-primary">Host</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm">John Doe</span>
+      </div>
+    </div>
+  </div>
+);
 
-  const ActivePanel = tabs.find(tab => tab.id === activeTab)?.content || TranscriptPanel;
+export const Sidebar = () => {
+  const [activeTab, setActiveTab] = useState('transcript');
+  
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'transcript':
+        return <TranscriptPanel />;
+      case 'actions':
+        return <ActionPanel />;
+      case 'participants':
+        return <ParticipantPanel />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="sidebar">
-      <div className="tab-header">
-        {tabs.map((tab) => (
-          <Tab
-            key={tab.id}
-            id={tab.id}
-            label={tab.label}
-            icon={tab.icon}
-            isActive={activeTab === tab.id}
-            onClick={() => setActiveTab(tab.id)}
-          />
-        ))}
-      </div>
+      <TabNavigation
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
       
       <div className="panel-content">
-        <ActivePanel participants={[
-          { id: '1', name: 'You', isHost: true },
-          { id: '2', name: 'John Doe' }
-        ]} />
+        {renderContent()}
       </div>
       
       <div className="ai-input-container">
