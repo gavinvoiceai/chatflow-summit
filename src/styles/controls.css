@@ -1,5 +1,6 @@
 .control-bar {
-  @apply flex items-center gap-2 p-2 rounded-full bg-muted/80 backdrop-blur-sm border border-border/10;
+  @apply flex items-center justify-center gap-4 p-4 rounded-full bg-muted/80 backdrop-blur-sm border border-border/10 mx-auto;
+  max-width: fit-content;
 }
 
 .control-button {
@@ -16,7 +17,7 @@
   }
   
   .control-bar {
-    @apply w-auto justify-center;
+    @apply w-auto;
   }
 }
 

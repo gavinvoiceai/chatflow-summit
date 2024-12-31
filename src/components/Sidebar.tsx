@@ -21,7 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const sidebarClass = cn(
     'fixed right-0 h-screen bg-background border-l border-border/10 transition-all duration-300 z-40',
-    isOpen ? 'w-80' : 'w-0',
+    isOpen ? 'w-[320px]' : 'w-0',
     isMobile && 'bottom-0 h-[70vh] w-full border-t border-l-0 translate-y-full',
     isMobile && isOpen && 'translate-y-0'
   );
@@ -41,14 +41,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onTabChange={setActiveTab}
         />
         
-        <div className="panel-content overflow-y-auto">
+        <div className="panel-content h-[calc(100%-8rem)] overflow-y-auto p-4">
           {children}
         </div>
         
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/10">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/10 bg-background/80 backdrop-blur-sm">
           <Input
             placeholder="Ask AI Assistant..."
-            className="w-full bg-background/50 backdrop-blur-sm"
+            className="w-full bg-background/50"
           />
         </div>
       </div>

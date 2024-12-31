@@ -95,7 +95,7 @@ export const VideoConferenceScreen = () => {
 
   return (
     <div className="relative h-screen bg-background overflow-hidden">
-      {/* End Meeting Button */}
+      {/* End Meeting Button - Fixed position */}
       <Button
         variant="destructive"
         size="sm"
@@ -110,11 +110,13 @@ export const VideoConferenceScreen = () => {
         {/* Main Content Area */}
         <div className="flex-1 relative">
           <ErrorBoundary>
-            <VideoGrid participants={participants} />
+            <div className="h-full pb-24 md:pb-20">
+              <VideoGrid participants={participants} />
+            </div>
           </ErrorBoundary>
 
-          {/* Controls */}
-          <div className="fixed bottom-0 left-0 right-0 md:right-[320px] z-40">
+          {/* Controls - Fixed at bottom */}
+          <div className="fixed bottom-0 left-0 right-0 md:right-[320px] p-4 bg-background/80 backdrop-blur-sm border-t border-border/10 z-40">
             <MeetingControls
               audioEnabled={audioEnabled}
               videoEnabled={videoEnabled}
@@ -130,7 +132,7 @@ export const VideoConferenceScreen = () => {
           </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar - Fixed width on desktop */}
         <Sidebar 
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
