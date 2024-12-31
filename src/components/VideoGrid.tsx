@@ -14,7 +14,15 @@ interface VideoGridProps {
 
 export const VideoGrid: React.FC<VideoGridProps> = ({ participants }) => {
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
-  const mainSpeaker = participants.find(p => p.isMainSpeaker) || participants[0];
+  
+  // Ensure we have at least one participant to avoid undefined errors
+  const mainSpeaker = participants.find(p => p.isMainSpeaker) || participants[0] || {
+    id: 'placeholder',
+    name: 'No participants',
+    videoEnabled: false,
+    audioEnabled: false
+  };
+  
   const otherParticipants = participants.filter(p => p.id !== mainSpeaker.id);
 
   useEffect(() => {

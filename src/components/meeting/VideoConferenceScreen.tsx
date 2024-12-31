@@ -4,6 +4,7 @@ import { MeetingControls } from './MeetingControls';
 import { useParams, useNavigate } from 'react-router-dom';
 import { deviceManager } from '@/services/deviceManager';
 import { toast } from 'sonner';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const VideoConferenceScreen = () => {
   const { meetingId } = useParams();
@@ -32,6 +33,7 @@ export const VideoConferenceScreen = () => {
 
     return () => {
       if (localStream) {
+        console.log('Cleaning up media streams');
         localStream.getTracks().forEach(track => track.stop());
       }
     };
@@ -40,7 +42,7 @@ export const VideoConferenceScreen = () => {
   const handleToggleAudio = async () => {
     if (localStream) {
       const newState = !audioEnabled;
-      await deviceManager.toggleAudio(newState, localStream);
+      await deviceManager.toggleAudio(newState);
       setAudioEnabled(newState);
     }
   };
@@ -48,7 +50,7 @@ export const VideoConferenceScreen = () => {
   const handleToggleVideo = async () => {
     if (localStream) {
       const newState = !videoEnabled;
-      await deviceManager.toggleVideo(newState, localStream);
+      await deviceManager.toggleVideo(newState);
       setVideoEnabled(newState);
     }
   };
@@ -88,7 +90,9 @@ export const VideoConferenceScreen = () => {
   return (
     <div className="flex flex-col h-screen bg-background">
       <div className="flex-1 relative">
-        <VideoGrid participants={participants} />
+        <ErrorBoundary>
+          <VideoGrid participants={participants} />
+        </ErrorBoundary>
       </div>
       <MeetingControls
         audioEnabled={audioEnabled}
