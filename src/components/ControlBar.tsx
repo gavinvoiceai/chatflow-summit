@@ -41,13 +41,13 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               size="icon"
               onClick={onToggleAudio}
               className={cn(
-                "control-button",
-                !audioEnabled && "text-destructive"
+                "control-button group",
+                !audioEnabled && "text-destructive hover:text-destructive"
               )}
             >
               {audioEnabled ? 
-                <Mic className="h-5 w-5 text-[#00FF9D]" /> : 
-                <MicOff className="h-5 w-5 text-destructive" />
+                <Mic className="h-5 w-5 text-[#00FF9D] group-hover:text-black transition-colors" /> : 
+                <MicOff className="h-5 w-5" />
               }
             </Button>
           </TooltipTrigger>
@@ -63,13 +63,13 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               size="icon"
               onClick={onToggleVideo}
               className={cn(
-                "control-button",
-                !videoEnabled && "text-destructive"
+                "control-button group",
+                !videoEnabled && "text-destructive hover:text-destructive"
               )}
             >
               {videoEnabled ? 
-                <Video className="h-5 w-5 text-[#00FF9D]" /> : 
-                <VideoOff className="h-5 w-5 text-destructive" />
+                <Video className="h-5 w-5 text-[#00FF9D] group-hover:text-black transition-colors" /> : 
+                <VideoOff className="h-5 w-5" />
               }
             </Button>
           </TooltipTrigger>
@@ -84,9 +84,9 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               variant="ghost" 
               size="icon" 
               onClick={onShareScreen}
-              className="control-button"
+              className="control-button group"
             >
-              <Monitor className="h-5 w-5 text-[#00FF9D]" />
+              <Monitor className="h-5 w-5 text-[#00FF9D] group-hover:text-black transition-colors" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Share screen</TooltipContent>
@@ -98,9 +98,9 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               variant="ghost" 
               size="icon" 
               onClick={onOpenChat}
-              className="control-button"
+              className="control-button group"
             >
-              <MessageSquare className="h-5 w-5 text-[#00FF9D]" />
+              <MessageSquare className="h-5 w-5 text-[#00FF9D] group-hover:text-black transition-colors" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Open chat</TooltipContent>
@@ -112,9 +112,9 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               variant="ghost" 
               size="icon" 
               onClick={onOpenSettings}
-              className="control-button"
+              className="control-button group"
             >
-              <Settings className="h-5 w-5 text-[#00FF9D]" />
+              <Settings className="h-5 w-5 text-[#00FF9D] group-hover:text-black transition-colors" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Settings</TooltipContent>
