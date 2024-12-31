@@ -42,7 +42,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({ participants }) => {
   return (
     <div className="video-grid h-full">
       {/* Main speaker view */}
-      <div className="video-container main-speaker relative rounded-lg overflow-hidden bg-secondary">
+      <div className="video-container main-speaker">
         <video
           ref={el => videoRefs.current[mainSpeaker.id] = el}
           autoPlay
@@ -60,20 +60,20 @@ export const VideoGrid: React.FC<VideoGridProps> = ({ participants }) => {
             </div>
           </div>
         )}
-        <div className="absolute bottom-4 left-4 glass-panel px-3 py-1 rounded-full text-sm flex items-center gap-2">
+        <div className="absolute bottom-4 left-4 glass-panel px-3 py-1 rounded-full text-sm">
           {mainSpeaker.name}
           {!mainSpeaker.audioEnabled && (
-            <span className="text-destructive">🔇</span>
+            <span className="text-destructive ml-2">🔇</span>
           )}
         </div>
       </div>
 
       {/* Secondary participants */}
-      <div className="secondary-container grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="secondary-container">
         {otherParticipants.map((participant) => (
           <div 
             key={participant.id} 
-            className="video-container relative rounded-lg overflow-hidden bg-secondary hover:ring-2 hover:ring-primary transition-all cursor-pointer"
+            className="video-container"
           >
             <video
               ref={el => videoRefs.current[participant.id] = el}
@@ -92,10 +92,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({ participants }) => {
                 </div>
               </div>
             )}
-            <div className="absolute bottom-4 left-4 glass-panel px-3 py-1 rounded-full text-sm flex items-center gap-2">
+            <div className="absolute bottom-4 left-4 glass-panel px-3 py-1 rounded-full text-sm">
               {participant.name}
               {!participant.audioEnabled && (
-                <span className="text-destructive">🔇</span>
+                <span className="text-destructive ml-2">🔇</span>
               )}
             </div>
           </div>

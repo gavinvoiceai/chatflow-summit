@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { VideoGrid } from '@/components/VideoGrid';
 import { MeetingControls } from './MeetingControls';
+import { Sidebar } from '@/components/Sidebar';
 import { useParams, useNavigate } from 'react-router-dom';
 import { deviceManager } from '@/services/deviceManager';
 import { toast } from 'sonner';
@@ -88,24 +89,25 @@ export const VideoConferenceScreen = () => {
   ] : [];
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex h-screen bg-background">
       <div className="flex-1 relative">
         <ErrorBoundary>
           <VideoGrid participants={participants} />
         </ErrorBoundary>
+        <MeetingControls
+          audioEnabled={audioEnabled}
+          videoEnabled={videoEnabled}
+          isTranscribing={isTranscribing}
+          showCaptions={showCaptions}
+          onToggleAudio={handleToggleAudio}
+          onToggleVideo={handleToggleVideo}
+          onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
+          onToggleCaptions={() => setShowCaptions(!showCaptions)}
+          onShareScreen={handleShareScreen}
+          onEndMeeting={handleEndMeeting}
+        />
       </div>
-      <MeetingControls
-        audioEnabled={audioEnabled}
-        videoEnabled={videoEnabled}
-        isTranscribing={isTranscribing}
-        showCaptions={showCaptions}
-        onToggleAudio={handleToggleAudio}
-        onToggleVideo={handleToggleVideo}
-        onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
-        onToggleCaptions={() => setShowCaptions(!showCaptions)}
-        onShareScreen={handleShareScreen}
-        onEndMeeting={handleEndMeeting}
-      />
+      <Sidebar />
     </div>
   );
 };
