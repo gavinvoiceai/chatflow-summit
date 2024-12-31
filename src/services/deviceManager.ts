@@ -19,6 +19,9 @@ class DeviceManager {
 
   async initializeDevices(config?: StreamConfig): Promise<MediaStream> {
     try {
+      // Cleanup any existing stream first
+      this.cleanup();
+      
       const streamConfig: StreamConfig = config || {
         video: this.videoConstraints,
         audio: true
@@ -42,6 +45,11 @@ class DeviceManager {
         reject(new Error('No video track available'));
         return;
       }
+
+      // Add track ended event listener
+      videoTrack.addEventListener('ended', () => {
+        console.error('Video track ended unexpectedly');
+      });
 
       if (videoTrack.readyState === 'live') {
         resolve(stream);
@@ -75,17 +83,25 @@ class DeviceManager {
   }
 
   async toggleAudio(enabled: boolean): Promise<void> {
-    if (!this.currentStream) return;
+    if (!this.currentStream) {
+      console.warn('No active stream to toggle audio');
+      return;
+    }
     
     this.currentStream.getAudioTracks().forEach(track => {
+      console.log(`Setting audio track enabled: ${enabled}`);
       track.enabled = enabled;
     });
   }
 
   async toggleVideo(enabled: boolean): Promise<void> {
-    if (!this.currentStream) return;
+    if (!this.currentStream) {
+      console.warn('No active stream to toggle video');
+      return;
+    }
     
     this.currentStream.getVideoTracks().forEach(track => {
+      console.log(`Setting video track enabled: ${enabled}`);
       track.enabled = enabled;
     });
   }
@@ -96,6 +112,7 @@ class DeviceManager {
 
   cleanup(): void {
     if (this.currentStream) {
+      console.log('Cleaning up media streams');
       this.currentStream.getTracks().forEach(track => {
         track.stop();
       });
