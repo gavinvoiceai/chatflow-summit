@@ -7,6 +7,8 @@ import { deviceManager } from '@/services/deviceManager';
 import { toast } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { TranscriptPanel } from '@/components/TranscriptPanel';
 
 export const VideoConferenceScreen = () => {
   const { meetingId } = useParams();
@@ -18,6 +20,7 @@ export const VideoConferenceScreen = () => {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showCaptions, setShowCaptions] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+  const [activeTab, setActiveTab] = useState('transcript');
 
   useEffect(() => {
     const initializeStream = async () => {
@@ -91,34 +94,54 @@ export const VideoConferenceScreen = () => {
   ] : [];
 
   return (
-    <div className="relative h-screen bg-background overflow-hidden">
-      <div className="flex h-full">
-        <div className="flex-1 relative">
-          <ErrorBoundary>
-            <div className="h-full pb-24 md:pb-20">
-              <VideoGrid participants={participants} />
-            </div>
-          </ErrorBoundary>
-          
-          <MeetingControls
-            audioEnabled={audioEnabled}
-            videoEnabled={videoEnabled}
-            isTranscribing={isTranscribing}
-            showCaptions={showCaptions}
-            onToggleAudio={handleToggleAudio}
-            onToggleVideo={handleToggleVideo}
-            onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
-            onToggleCaptions={() => setShowCaptions(!showCaptions)}
-            onShareScreen={handleShareScreen}
-            onEndMeeting={handleEndMeeting}
-          />
+    <div className="flex h-screen bg-background overflow-hidden">
+      <div className="flex-1 relative">
+        <ErrorBoundary>
+          <div className="h-full pb-24 md:pb-20">
+            <VideoGrid participants={participants} />
+          </div>
+        </ErrorBoundary>
+        
+        <div className="controls-container">
+          <div className="control-bar">
+            <MeetingControls
+              audioEnabled={audioEnabled}
+              videoEnabled={videoEnabled}
+              isTranscribing={isTranscribing}
+              showCaptions={showCaptions}
+              onToggleAudio={handleToggleAudio}
+              onToggleVideo={handleToggleVideo}
+              onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
+              onToggleCaptions={() => setShowCaptions(!showCaptions)}
+              onShareScreen={handleShareScreen}
+              onEndMeeting={handleEndMeeting}
+            />
+          </div>
         </div>
+      </div>
 
-        <Sidebar 
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-          isMobile={isMobile}
-        />
+      <div className="w-80 border-l border-border/10 bg-background/95">
+        <Tabs defaultValue="transcript" className="h-full">
+          <TabsList className="w-full justify-start px-2 border-b border-border/10">
+            <TabsTrigger value="transcript">Transcript</TabsTrigger>
+            <TabsTrigger value="actions">Actions</TabsTrigger>
+            <TabsTrigger value="participants">Participants</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="transcript" className="h-[calc(100%-48px)]">
+            <TranscriptPanel 
+              transcripts={[]} 
+              autoScroll={true}
+            />
+          </TabsContent>
+          <TabsContent value="actions" className="h-[calc(100%-48px)]">
+            {/* Action items panel will be implemented separately */}
+            <div className="p-4">Action Items</div>
+          </TabsContent>
+          <TabsContent value="participants" className="h-[calc(100%-48px)]">
+            <div className="p-4">Participants</div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
