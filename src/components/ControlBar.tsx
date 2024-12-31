@@ -42,12 +42,12 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onToggleAudio}
               className={cn(
                 "control-button",
-                !audioEnabled && "text-destructive"
+                !audioEnabled && "text-destructive hover:text-destructive"
               )}
             >
               {audioEnabled ? 
-                <Mic className="h-5 w-5 text-[#00FF9D]" /> : 
-                <MicOff className="h-5 w-5 text-destructive" />
+                <Mic className="h-5 w-5 text-muted-foreground hover:text-[#00FF9D] transition-colors" /> : 
+                <MicOff className="h-5 w-5" />
               }
             </Button>
           </TooltipTrigger>
@@ -64,12 +64,12 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onToggleVideo}
               className={cn(
                 "control-button",
-                !videoEnabled && "text-destructive"
+                !videoEnabled && "text-destructive hover:text-destructive"
               )}
             >
               {videoEnabled ? 
-                <Video className="h-5 w-5 text-[#00FF9D]" /> : 
-                <VideoOff className="h-5 w-5 text-destructive" />
+                <Video className="h-5 w-5 text-muted-foreground hover:text-[#00FF9D] transition-colors" /> : 
+                <VideoOff className="h-5 w-5" />
               }
             </Button>
           </TooltipTrigger>
@@ -86,7 +86,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onShareScreen}
               className="control-button"
             >
-              <Monitor className="h-5 w-5 text-[#00FF9D]" />
+              <Monitor className="h-5 w-5 text-muted-foreground hover:text-[#00FF9D] transition-colors" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Share screen</TooltipContent>
@@ -100,7 +100,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onOpenChat}
               className="control-button"
             >
-              <MessageSquare className="h-5 w-5 text-[#00FF9D]" />
+              <MessageSquare className="h-5 w-5 text-muted-foreground hover:text-[#00FF9D] transition-colors" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Open chat</TooltipContent>
@@ -114,7 +114,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onOpenSettings}
               className="control-button"
             >
-              <Settings className="h-5 w-5 text-[#00FF9D]" />
+              <Settings className="h-5 w-5 text-muted-foreground hover:text-[#00FF9D] transition-colors" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Settings</TooltipContent>
