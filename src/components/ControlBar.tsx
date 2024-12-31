@@ -33,89 +33,91 @@ export const ControlBar: React.FC<ControlBarProps> = ({
 }) => {
   return (
     <div className="control-bar">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggleAudio}
-            className={cn(
-              "control-button",
-              !audioEnabled && "text-destructive",
-              audioEnabled && "active"
-            )}
-          >
-            {audioEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {audioEnabled ? 'Mute microphone' : 'Unmute microphone'}
-        </TooltipContent>
-      </Tooltip>
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleAudio}
+              className={cn(
+                "control-button",
+                !audioEnabled && "text-destructive",
+                audioEnabled && "active"
+              )}
+            >
+              {audioEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {audioEnabled ? 'Mute microphone' : 'Unmute microphone'}
+          </TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggleVideo}
-            className={cn(
-              "control-button",
-              !videoEnabled && "text-destructive",
-              videoEnabled && "active"
-            )}
-          >
-            {videoEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {videoEnabled ? 'Turn off camera' : 'Turn on camera'}
-        </TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleVideo}
+              className={cn(
+                "control-button",
+                !videoEnabled && "text-destructive",
+                videoEnabled && "active"
+              )}
+            >
+              {videoEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {videoEnabled ? 'Turn off camera' : 'Turn on camera'}
+          </TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onShareScreen}
-            className="control-button"
-          >
-            <Monitor className="h-5 w-5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Share screen</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onShareScreen}
+              className="control-button"
+            >
+              <Monitor className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Share screen</TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onOpenChat}
-            className="control-button"
-          >
-            <MessageSquare className="h-5 w-5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Open chat</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onOpenChat}
+              className="control-button"
+            >
+              <MessageSquare className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Open chat</TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onOpenSettings}
-            className="control-button"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Settings</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onOpenSettings}
+              className="control-button"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Settings</TooltipContent>
+        </Tooltip>
 
-      {children}
+        {children}
+      </div>
     </div>
   );
 };
