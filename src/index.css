@@ -94,17 +94,26 @@
   min-height: 48px;
   width: 100%;
   display: flex;
-  gap: 4px;
+  gap: 8px;
+  padding: 0 8px;
 }
 
 .tab {
-  flex: 1;
+  min-width: 90px;
   padding: 8px 12px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 500;
+  border-radius: 4px;
+  background-color: hsl(var(--secondary));
+  transition: background-color 0.2s;
+}
+
+.tab:hover {
+  background-color: hsl(var(--accent));
 }
 
 .controls-container {
