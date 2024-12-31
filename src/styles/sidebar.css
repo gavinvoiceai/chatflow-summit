@@ -1,6 +1,6 @@
 .sidebar {
   @apply h-screen bg-background border-l border-border/10 transition-all duration-300;
-  width: 300px;
+  width: 320px;
 }
 
 .sidebar-collapsed {
