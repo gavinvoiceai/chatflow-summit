@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { VideoGrid } from '@/components/VideoGrid';
 import { ControlBar } from '@/components/ControlBar';
+import { Sidebar } from '@/components/Sidebar';
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -121,7 +122,7 @@ const Index = () => {
 
   return (
     <div className="conference-container">
-      <div className="flex-1 relative">
+      <div className="flex-1 relative pr-[300px]">
         <VideoGrid participants={participants} />
         
         <div className="controls-container">
@@ -155,6 +156,8 @@ const Index = () => {
           </Button>
         </div>
       </div>
+
+      <Sidebar />
 
       <AlertDialog open={showEndDialog} onOpenChange={setShowEndDialog}>
         <AlertDialogContent>
