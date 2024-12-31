@@ -9,12 +9,21 @@ export interface TranscriptionSegment {
   isInterim: boolean;
 }
 
+interface TranscriptionBuffer {
+  text: string;
+  timeoutId: number | null;
+}
+
 export class TranscriptionService {
   private recognition: SpeechRecognition | null = null;
   private currentMeetingId: string;
   private onTranscriptUpdate: (segment: TranscriptionSegment) => void;
   private onCaptionUpdate: (text: string, speaker: string) => void;
   private transcriptionManager: TranscriptionManager;
+  private buffer: TranscriptionBuffer = {
+    text: '',
+    timeoutId: null
+  };
 
   constructor(
     meetingId: string,
@@ -25,8 +34,6 @@ export class TranscriptionService {
     this.onTranscriptUpdate = onTranscriptUpdate;
     this.onCaptionUpdate = onCaptionUpdate;
     
-    // Initialize TranscriptionManager with current user ID
-    // Note: In a real app, you'd get the actual user ID
     this.transcriptionManager = new TranscriptionManager(
       meetingId,
       'current-user-id',
@@ -58,23 +65,50 @@ export class TranscriptionService {
   private handleSpeechResult(event: SpeechRecognitionEvent) {
     const results = Array.from(event.results);
     const currentSpeaker = 'You';
+    const lastResult = results[results.length - 1];
 
-    for (let i = event.resultIndex; i < results.length; i++) {
-      const transcript = results[i][0].transcript;
-      const isFinal = results[i].isFinal;
+    if (lastResult) {
+      const transcript = lastResult[0].transcript;
+      const isFinal = lastResult.isFinal;
 
-      // Use TranscriptionManager for buffering and processing
-      this.transcriptionManager.handleSpeech(transcript, isFinal);
+      if (isFinal) {
+        this.commitTranscription(transcript, currentSpeaker);
+      } else {
+        this.bufferTranscription(transcript, currentSpeaker);
+      }
+    }
+  }
 
-      // Update transcript panel
+  private bufferTranscription(text: string, speaker: string) {
+    if (this.buffer.timeoutId) {
+      clearTimeout(this.buffer.timeoutId);
+    }
+
+    this.buffer.text = text;
+    this.onCaptionUpdate(text, speaker);
+
+    this.buffer.timeoutId = window.setTimeout(() => {
+      if (this.buffer.text) {
+        this.commitTranscription(this.buffer.text, speaker);
+        this.buffer.text = '';
+      }
+    }, 1000) as unknown as number;
+  }
+
+  private async commitTranscription(text: string, speaker: string) {
+    try {
       const segment: TranscriptionSegment = {
-        speaker: currentSpeaker,
+        speaker,
         timestamp: new Date(),
-        content: transcript,
-        isInterim: !isFinal
+        content: text,
+        isInterim: false
       };
 
+      await this.transcriptionManager.commitTranscription(text);
       this.onTranscriptUpdate(segment);
+    } catch (error) {
+      console.error('Error committing transcription:', error);
+      toast.error("Failed to save transcription");
     }
   }
 
@@ -93,6 +127,10 @@ export class TranscriptionService {
   stop() {
     if (this.recognition) {
       this.recognition.stop();
+    }
+    if (this.buffer.timeoutId) {
+      clearTimeout(this.buffer.timeoutId);
+      this.buffer.text = '';
     }
     this.transcriptionManager.cleanup();
   }

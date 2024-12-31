@@ -1,9 +1,12 @@
-import { toast } from "sonner";
-
 interface VideoConstraints {
   width: { ideal: number };
   height: { ideal: number };
   frameRate: { ideal: number };
+}
+
+interface StreamConfig {
+  video: VideoConstraints | boolean;
+  audio: boolean;
 }
 
 class DeviceManager {
@@ -14,19 +17,19 @@ class DeviceManager {
     frameRate: { ideal: 30 }
   };
 
-  async initializeDevices(): Promise<MediaStream> {
+  async initializeDevices(config?: StreamConfig): Promise<MediaStream> {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const streamConfig: StreamConfig = config || {
         video: this.videoConstraints,
         audio: true
-      });
+      };
 
+      const stream = await navigator.mediaDevices.getUserMedia(streamConfig);
       await this.validateStream(stream);
       this.currentStream = stream;
       return stream;
     } catch (error) {
       console.error('Failed to initialize devices:', error);
-      toast.error("Failed to access camera or microphone");
       throw error;
     }
   }

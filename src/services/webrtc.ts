@@ -54,26 +54,35 @@ export class WebRTCService {
   }
 
   async initializeLocalStream(): Promise<MediaStream> {
-    const stream = deviceManager.getCurrentStream();
-    if (!stream) {
-      throw new Error('No media stream available');
+    try {
+      const stream = await deviceManager.initializeDevices();
+      return stream;
+    } catch (error) {
+      console.error('Failed to initialize local stream:', error);
+      toast.error("Failed to initialize video stream");
+      throw error;
     }
-    return stream;
   }
 
   async addPeer(participantId: string): Promise<void> {
-    const connection = await this.setupPeerConnection(participantId);
-    const stream = deviceManager.getCurrentStream();
-    
-    if (stream) {
-      stream.getTracks().forEach(track => {
-        if (stream) {
-          connection.addTrack(track, stream);
-        }
-      });
-    }
+    try {
+      const connection = await this.setupPeerConnection(participantId);
+      const stream = deviceManager.getCurrentStream();
+      
+      if (stream) {
+        stream.getTracks().forEach(track => {
+          if (stream) {
+            connection.addTrack(track, stream);
+          }
+        });
+      }
 
-    this.peerConnections.set(participantId, { connection, stream: null });
+      this.peerConnections.set(participantId, { connection, stream: null });
+    } catch (error) {
+      console.error('Failed to add peer:', error);
+      toast.error("Failed to connect with participant");
+      throw error;
+    }
   }
 
   removePeer(participantId: string): void {
@@ -103,5 +112,6 @@ export class WebRTCService {
       peer.connection.close();
     });
     this.peerConnections.clear();
+    deviceManager.cleanup();
   }
 }
