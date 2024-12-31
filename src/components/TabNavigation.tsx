@@ -36,7 +36,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   onTabChange
 }) => {
   return (
-    <div className="tab-header flex items-center gap-2 p-2 border-b border-border/10">
+    <div className="tab-header flex items-center justify-start gap-2 p-2 border-b border-border/10">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -45,8 +45,8 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             "tab-button p-2 rounded-md transition-colors duration-200",
             "hover:bg-accent/10 hover:shadow-[0_0_10px_rgba(0,255,157,0.2)]",
             activeTab === tab.id 
-              ? "text-[#00FF9D] bg-accent/10 shadow-[0_0_15px_rgba(0,255,157,0.3)]" 
-              : "text-[#00FF9D]/70"
+              ? "text-[#00FF9D]" 
+              : "text-[#00FF9D]/50"
           )}
           aria-label={tab.ariaLabel}
           aria-selected={activeTab === tab.id}
