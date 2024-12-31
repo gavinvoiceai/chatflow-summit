@@ -7,12 +7,12 @@
   @apply flex items-center justify-center gap-4 px-6 py-3 rounded-full;
   background-color: rgba(26, 26, 26, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 255, 157, 0.1);
 }
 
 .control-button {
   @apply p-2 rounded-full transition-all duration-200;
-  color: rgba(255, 255, 255, 0.9);
+  color: #00FF9D;
 }
 
 .control-button:hover {
