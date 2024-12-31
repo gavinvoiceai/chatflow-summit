@@ -1,73 +1,103 @@
 import { toast } from "sonner";
 
-export interface DeviceState {
-  audioEnabled: boolean;
-  videoEnabled: boolean;
-  currentStream: MediaStream | null;
+interface VideoConstraints {
+  width: { ideal: number };
+  height: { ideal: number };
+  frameRate: { ideal: number };
 }
 
 class DeviceManager {
-  private deviceState: DeviceState = {
-    audioEnabled: true,
-    videoEnabled: true,
-    currentStream: null
+  private currentStream: MediaStream | null = null;
+  private videoConstraints: VideoConstraints = {
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
+    frameRate: { ideal: 30 }
   };
 
   async initializeDevices(): Promise<MediaStream> {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true
+        video: this.videoConstraints,
+        audio: true
       });
-      
-      this.deviceState.currentStream = stream;
-      this.deviceState.audioEnabled = true;
-      this.deviceState.videoEnabled = true;
-      
+
+      await this.validateStream(stream);
+      this.currentStream = stream;
       return stream;
     } catch (error) {
-      console.error('Permission error:', error);
-      toast.error("Failed to access camera or microphone. Please check your device permissions.");
+      console.error('Failed to initialize devices:', error);
+      toast.error("Failed to access camera or microphone");
       throw error;
     }
   }
 
+  private validateStream(stream: MediaStream): Promise<MediaStream> {
+    return new Promise((resolve, reject) => {
+      const videoTrack = stream.getVideoTracks()[0];
+      
+      if (!videoTrack) {
+        reject(new Error('No video track available'));
+        return;
+      }
+
+      if (videoTrack.readyState === 'live') {
+        resolve(stream);
+        return;
+      }
+
+      const cleanup = () => {
+        videoTrack.removeEventListener('ended', handleEnded);
+        videoTrack.removeEventListener('mute', handleMute);
+      };
+
+      const handleEnded = () => {
+        cleanup();
+        reject(new Error('Video track ended'));
+      };
+
+      const handleMute = () => {
+        cleanup();
+        reject(new Error('Video track muted'));
+      };
+
+      videoTrack.addEventListener('ended', handleEnded);
+      videoTrack.addEventListener('mute', handleMute);
+
+      // Grace period for stream initialization
+      setTimeout(() => {
+        cleanup();
+        resolve(stream);
+      }, 1000);
+    });
+  }
+
   async toggleAudio(enabled: boolean): Promise<void> {
-    if (this.deviceState.currentStream) {
-      this.deviceState.currentStream.getAudioTracks().forEach(track => {
-        track.enabled = enabled;
-      });
-      this.deviceState.audioEnabled = enabled;
-    }
+    if (!this.currentStream) return;
+    
+    this.currentStream.getAudioTracks().forEach(track => {
+      track.enabled = enabled;
+    });
   }
 
   async toggleVideo(enabled: boolean): Promise<void> {
-    if (this.deviceState.currentStream) {
-      this.deviceState.currentStream.getVideoTracks().forEach(track => {
-        track.enabled = enabled;
-      });
-      this.deviceState.videoEnabled = enabled;
-    }
-  }
-
-  cleanup(): void {
-    if (this.deviceState.currentStream) {
-      this.deviceState.currentStream.getTracks().forEach(track => {
-        track.stop();
-      });
-      this.deviceState.currentStream = null;
-    }
+    if (!this.currentStream) return;
     
-    this.deviceState.audioEnabled = true;
-    this.deviceState.videoEnabled = true;
+    this.currentStream.getVideoTracks().forEach(track => {
+      track.enabled = enabled;
+    });
   }
 
   getCurrentStream(): MediaStream | null {
-    return this.deviceState.currentStream;
+    return this.currentStream;
   }
 
-  getDeviceState(): DeviceState {
-    return { ...this.deviceState };
+  cleanup(): void {
+    if (this.currentStream) {
+      this.currentStream.getTracks().forEach(track => {
+        track.stop();
+      });
+      this.currentStream = null;
+    }
   }
 }
 

@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { TranscriptionManager } from "./transcriptionManager";
+import { toast } from "sonner";
 
 export interface TranscriptionSegment {
   speaker: string;
@@ -12,6 +14,7 @@ export class TranscriptionService {
   private currentMeetingId: string;
   private onTranscriptUpdate: (segment: TranscriptionSegment) => void;
   private onCaptionUpdate: (text: string, speaker: string) => void;
+  private transcriptionManager: TranscriptionManager;
 
   constructor(
     meetingId: string,
@@ -21,12 +24,22 @@ export class TranscriptionService {
     this.currentMeetingId = meetingId;
     this.onTranscriptUpdate = onTranscriptUpdate;
     this.onCaptionUpdate = onCaptionUpdate;
+    
+    // Initialize TranscriptionManager with current user ID
+    // Note: In a real app, you'd get the actual user ID
+    this.transcriptionManager = new TranscriptionManager(
+      meetingId,
+      'current-user-id',
+      onCaptionUpdate
+    );
+    
     this.initializeSpeechRecognition();
   }
 
   private initializeSpeechRecognition() {
     if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
-      throw new Error('Speech recognition is not supported in your browser');
+      toast.error("Speech recognition is not supported in your browser");
+      throw new Error('Speech recognition not supported');
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -42,14 +55,18 @@ export class TranscriptionService {
     }
   }
 
-  private async handleSpeechResult(event: SpeechRecognitionEvent) {
+  private handleSpeechResult(event: SpeechRecognitionEvent) {
     const results = Array.from(event.results);
-    const currentSpeaker = 'User'; // TODO: Implement speaker detection
+    const currentSpeaker = 'You';
 
-    for (let i = 0; i < results.length; i++) {
+    for (let i = event.resultIndex; i < results.length; i++) {
       const transcript = results[i][0].transcript;
       const isFinal = results[i].isFinal;
 
+      // Use TranscriptionManager for buffering and processing
+      this.transcriptionManager.handleSpeech(transcript, isFinal);
+
+      // Update transcript panel
       const segment: TranscriptionSegment = {
         speaker: currentSpeaker,
         timestamp: new Date(),
@@ -57,35 +74,14 @@ export class TranscriptionService {
         isInterim: !isFinal
       };
 
-      if (isFinal) {
-        await this.updateTranscript(segment);
-        this.onCaptionUpdate(transcript, currentSpeaker);
-      }
-
       this.onTranscriptUpdate(segment);
     }
   }
 
   private handleSpeechError(error: SpeechRecognitionError) {
     console.error('Speech recognition error:', error);
+    toast.error("Speech recognition error occurred");
     this.stop();
-  }
-
-  private async updateTranscript(segment: TranscriptionSegment) {
-    try {
-      const { error } = await supabase
-        .from('meeting_transcripts')
-        .insert({
-          meeting_id: this.currentMeetingId,
-          speaker_id: segment.speaker,
-          content: segment.content,
-          timestamp: segment.timestamp.toISOString()
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error updating transcript:', error);
-    }
   }
 
   start() {
@@ -98,5 +94,6 @@ export class TranscriptionService {
     if (this.recognition) {
       this.recognition.stop();
     }
+    this.transcriptionManager.cleanup();
   }
 }
