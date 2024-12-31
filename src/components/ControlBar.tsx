@@ -45,7 +45,10 @@ export const ControlBar: React.FC<ControlBarProps> = ({
                 !audioEnabled && "text-destructive"
               )}
             >
-              {audioEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+              {audioEnabled ? 
+                <Mic className="h-5 w-5 text-[#00FF9D]" /> : 
+                <MicOff className="h-5 w-5 text-destructive" />
+              }
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -64,7 +67,10 @@ export const ControlBar: React.FC<ControlBarProps> = ({
                 !videoEnabled && "text-destructive"
               )}
             >
-              {videoEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+              {videoEnabled ? 
+                <Video className="h-5 w-5 text-[#00FF9D]" /> : 
+                <VideoOff className="h-5 w-5 text-destructive" />
+              }
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -80,7 +86,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onShareScreen}
               className="control-button"
             >
-              <Monitor className="h-5 w-5" />
+              <Monitor className="h-5 w-5 text-[#00FF9D]" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Share screen</TooltipContent>
@@ -94,7 +100,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onOpenChat}
               className="control-button"
             >
-              <MessageSquare className="h-5 w-5" />
+              <MessageSquare className="h-5 w-5 text-[#00FF9D]" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Open chat</TooltipContent>
@@ -108,7 +114,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onOpenSettings}
               className="control-button"
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-5 w-5 text-[#00FF9D]" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Settings</TooltipContent>
