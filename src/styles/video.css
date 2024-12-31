@@ -1,0 +1,38 @@
+.video-grid {
+  @apply grid gap-4 p-4;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.video-container {
+  @apply relative bg-card rounded-lg overflow-hidden border border-secondary/10 transition-all duration-300;
+  aspect-ratio: 16/9;
+}
+
+.video-container.speaking {
+  @apply border-primary shadow-[0_0_15px_rgba(0,255,157,0.2)];
+}
+
+.main-speaker {
+  @apply w-full max-h-[60vh];
+}
+
+.secondary-container {
+  @apply grid gap-4;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .secondary-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .secondary-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

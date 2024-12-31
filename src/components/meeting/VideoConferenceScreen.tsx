@@ -6,15 +6,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { deviceManager } from '@/services/deviceManager';
 import { toast } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const VideoConferenceScreen = () => {
   const { meetingId } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showCaptions, setShowCaptions] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
 
   useEffect(() => {
     const initializeStream = async () => {
@@ -88,12 +93,24 @@ export const VideoConferenceScreen = () => {
     }
   ] : [];
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       <div className="flex-1 relative">
         <ErrorBoundary>
           <VideoGrid participants={participants} />
         </ErrorBoundary>
+        
+        <Button
+          variant="ghost"
+          size="icon"
+          className="sidebar-toggle lg:hidden"
+          onClick={toggleSidebar}
+        >
+          {isSidebarOpen ? <ChevronRight /> : <ChevronLeft />}
+        </Button>
+
         <MeetingControls
           audioEnabled={audioEnabled}
           videoEnabled={videoEnabled}
@@ -107,7 +124,12 @@ export const VideoConferenceScreen = () => {
           onEndMeeting={handleEndMeeting}
         />
       </div>
-      <Sidebar />
+      
+      <Sidebar 
+        isOpen={isSidebarOpen}
+        onToggle={toggleSidebar}
+        isMobile={isMobile}
+      />
     </div>
   );
 };

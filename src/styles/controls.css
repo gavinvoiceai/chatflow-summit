@@ -1,5 +1,5 @@
 .controls-container {
-  @apply fixed bottom-0 left-0 right-0 p-4 flex justify-center items-center gap-2;
+  @apply fixed bottom-0 left-0 right-0 p-4 flex justify-center items-center gap-2 z-50;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
 }
 
@@ -7,40 +7,12 @@
   @apply flex items-center gap-2 p-2 rounded-full bg-muted/80 backdrop-blur-sm border border-border/10;
 }
 
-.glass-panel {
-  @apply bg-muted/80 backdrop-blur-sm border border-border/10;
-}
-
-.device-status {
-  @apply flex items-center gap-2 px-3 py-1 rounded-full text-sm transition-all duration-300;
-}
-
-.device-status.active {
-  @apply bg-primary/10 text-primary;
-}
-
-.device-status.warning {
-  @apply bg-destructive/10 text-destructive;
-}
-
-.meeting-status {
-  @apply px-3 py-1 rounded-full text-sm;
-  @apply bg-secondary/10 text-secondary;
-}
-
-.network-indicator {
-  @apply flex items-center gap-1 px-2 py-1 rounded-full text-xs;
-  @apply bg-muted/80 backdrop-blur-sm transition-all duration-300;
-}
-
-.network-indicator.good {
-  @apply text-primary;
-}
-
-.network-indicator.poor {
-  @apply text-yellow-500;
-}
-
-.network-indicator.bad {
-  @apply text-destructive;
+@media (max-width: 768px) {
+  .controls-container {
+    @apply pb-6;
+  }
+  
+  .control-bar {
+    @apply w-full justify-center;
+  }
 }
