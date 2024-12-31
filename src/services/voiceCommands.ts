@@ -21,29 +21,33 @@ export class VoiceCommandService {
   }
 
   private initializeSpeechRecognition() {
-    if (!('webkitSpeechRecognition' in window)) {
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
       toast.error('Speech recognition is not supported in your browser');
       return;
     }
 
-    this.recognition = new webkitSpeechRecognition();
-    this.recognition.continuous = true;
-    this.recognition.interimResults = true;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    this.recognition = new SpeechRecognition();
+    
+    if (this.recognition) {
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
 
-    this.recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)
-        .join(' ');
+      this.recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join(' ');
 
-      this.onTranscript(transcript);
-      this.processCommand(transcript);
-    };
+        this.onTranscript(transcript);
+        this.processCommand(transcript);
+      };
 
-    this.recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      toast.error('Voice command error occurred');
-      this.stop();
-    };
+      this.recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        toast.error('Voice command error occurred');
+        this.stop();
+      };
+    }
   }
 
   private processCommand(transcript: string) {
