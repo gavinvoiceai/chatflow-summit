@@ -9,7 +9,144 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      action_items: {
+        Row: {
+          assigned_by: string | null
+          assigned_to: string | null
+          completed: boolean | null
+          content: string | null
+          created_at: string | null
+          due_date: string | null
+          id: string
+          meeting_id: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          completed?: boolean | null
+          content?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          meeting_id?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          completed?: boolean | null
+          content?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          meeting_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_participants: {
+        Row: {
+          id: string
+          is_host: boolean | null
+          joined_at: string | null
+          left_at: string | null
+          meeting_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          is_host?: boolean | null
+          joined_at?: string | null
+          left_at?: string | null
+          meeting_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          is_host?: boolean | null
+          joined_at?: string | null
+          left_at?: string | null
+          meeting_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_participants_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_transcripts: {
+        Row: {
+          content: string | null
+          id: string
+          meeting_id: string | null
+          speaker_id: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          content?: string | null
+          id?: string
+          meeting_id?: string | null
+          speaker_id?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          content?: string | null
+          id?: string
+          meeting_id?: string | null
+          speaker_id?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_transcripts_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          created_at: string | null
+          ended_at: string | null
+          host_id: string | null
+          id: string
+          is_active: boolean | null
+          meeting_name: string | null
+          recording_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          ended_at?: string | null
+          host_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          meeting_name?: string | null
+          recording_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          ended_at?: string | null
+          host_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          meeting_name?: string | null
+          recording_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

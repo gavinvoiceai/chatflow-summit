@@ -1,22 +1,27 @@
 import { toast } from "sonner";
+import { AIAssistantService } from "./aiAssistant";
 
 export interface VoiceCommand {
-  type: 'createTask' | 'scheduleMeeting' | 'setReminder' | 'shareDocument';
+  type: 'createTask' | 'scheduleFollowup' | 'summarize';
   payload: string;
 }
 
 export class VoiceCommandService {
   private recognition: SpeechRecognition | null = null;
   private isListening: boolean = false;
+  private aiAssistant: AIAssistantService;
   private onCommand: (command: VoiceCommand) => void;
   private onTranscript: (text: string) => void;
+  private wakeWord: string = 'magic';
 
   constructor(
+    meetingId: string,
     onCommand: (command: VoiceCommand) => void,
     onTranscript: (text: string) => void
   ) {
     this.onCommand = onCommand;
     this.onTranscript = onTranscript;
+    this.aiAssistant = new AIAssistantService(meetingId);
     this.initializeSpeechRecognition();
   }
 
@@ -50,25 +55,29 @@ export class VoiceCommandService {
     }
   }
 
-  private processCommand(transcript: string) {
+  private async processCommand(transcript: string) {
     const lowerTranscript = transcript.toLowerCase();
     
-    if (!lowerTranscript.includes('magic')) return;
+    if (!lowerTranscript.includes(this.wakeWord)) return;
 
-    const commandText = transcript.toLowerCase().split('magic')[1].trim();
+    const commandText = transcript.toLowerCase().split(this.wakeWord)[1].trim();
     
-    if (commandText.startsWith('create task')) {
-      const task = commandText.replace('create task', '').trim();
-      this.onCommand({ type: 'createTask', payload: task });
-    } else if (commandText.startsWith('schedule meeting')) {
-      const details = commandText.replace('schedule meeting', '').trim();
-      this.onCommand({ type: 'scheduleMeeting', payload: details });
-    } else if (commandText.startsWith('set reminder')) {
-      const reminder = commandText.replace('set reminder', '').trim();
-      this.onCommand({ type: 'setReminder', payload: reminder });
-    } else if (commandText.startsWith('share document')) {
-      const document = commandText.replace('share document', '').trim();
-      this.onCommand({ type: 'shareDocument', payload: document });
+    try {
+      if (commandText.startsWith('create task')) {
+        const task = commandText.replace('create task', '').trim();
+        await this.aiAssistant.createTask(task);
+        this.onCommand({ type: 'createTask', payload: task });
+      } else if (commandText.startsWith('schedule meeting')) {
+        const details = commandText.replace('schedule meeting', '').trim();
+        await this.aiAssistant.scheduleFollowup(details);
+        this.onCommand({ type: 'scheduleFollowup', payload: details });
+      } else if (commandText.startsWith('summarize')) {
+        const summary = await this.aiAssistant.generateSummary();
+        this.onCommand({ type: 'summarize', payload: summary });
+      }
+    } catch (error) {
+      console.error('Error processing command:', error);
+      toast.error('Failed to process command');
     }
   }
 
