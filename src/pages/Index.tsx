@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { VideoGrid } from '@/components/VideoGrid';
-import { ControlBar } from '@/components/ControlBar';
 import { Sidebar } from '@/components/Sidebar';
 import { WebRTCService } from '@/services/webrtc';
 import { VoiceCommand } from '@/services/voiceCommands';
@@ -8,19 +7,11 @@ import { VoiceCommandManager } from '@/components/VoiceCommandManager';
 import { TranscriptionService, TranscriptionSegment } from '@/services/transcription';
 import { TranscriptPanel } from '@/components/TranscriptPanel';
 import { ClosedCaptions } from '@/components/ClosedCaptions';
-import { TranscriptionControls } from '@/components/TranscriptionControls';
 import { deviceManager } from '@/services/deviceManager';
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { LobbyView } from '@/components/meeting/LobbyView';
+import { MeetingControls } from '@/components/meeting/MeetingControls';
+import { EndMeetingDialog } from '@/components/meeting/EndMeetingDialog';
 
 type MeetingState = 'lobby' | 'connecting' | 'inProgress' | 'ending';
 
@@ -73,7 +64,7 @@ const Index = () => {
     setWebrtcService(webrtc);
 
     const transcription = new TranscriptionService(
-      'meeting-id', // TODO: Replace with actual meeting ID
+      'meeting-id',
       handleTranscriptUpdate,
       handleCaptionUpdate
     );
@@ -83,10 +74,7 @@ const Index = () => {
   const startMeeting = async () => {
     try {
       setMeetingState('connecting');
-      
-      // Initialize devices first
       const stream = await deviceManager.initializeDevices();
-      
       await initializeServices();
       
       if (webrtcService) {
@@ -156,11 +144,9 @@ const Index = () => {
       transcriptionService?.stop();
     };
 
-    // Cleanup on component unmount
     return cleanup;
   }, [webrtcService, transcriptionService]);
 
-  // Handle page unload
   useEffect(() => {
     const handleBeforeUnload = () => {
       deviceManager.cleanup();
@@ -175,18 +161,7 @@ const Index = () => {
   }, [webrtcService, transcriptionService]);
 
   if (meetingState === 'lobby') {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <h1 className="text-2xl font-bold mb-8">Start a New Meeting</h1>
-        <Button 
-          onClick={startMeeting}
-          size="lg"
-          className="start-meeting"
-        >
-          Start Meeting
-        </Button>
-      </div>
-    );
+    return <LobbyView onStartMeeting={startMeeting} />;
   }
 
   return (
@@ -202,52 +177,31 @@ const Index = () => {
         )}
         
         <VoiceCommandManager
-          meetingId="meeting-id" // TODO: Replace with actual meeting ID
+          meetingId="meeting-id"
           onCommand={handleVoiceCommand}
         />
         
-        <div className="controls-container">
-          <ControlBar
-            audioEnabled={audioEnabled}
-            videoEnabled={videoEnabled}
-            voiceCommandsEnabled={false}
-            isListening={false}
-            onToggleAudio={toggleAudio}
-            onToggleVideo={toggleVideo}
-            onToggleVoiceCommands={() => {}}
-            onShareScreen={async () => {
-              try {
-                const screenStream = await webrtcService?.startScreenShare();
-                if (screenStream) {
-                  toast.success("Screen sharing started");
-                }
-              } catch {
-                toast.error("Failed to start screen sharing");
+        <MeetingControls
+          audioEnabled={audioEnabled}
+          videoEnabled={videoEnabled}
+          isTranscribing={isTranscribing}
+          showCaptions={showCaptions}
+          onToggleAudio={toggleAudio}
+          onToggleVideo={toggleVideo}
+          onToggleTranscription={toggleTranscription}
+          onToggleCaptions={() => setShowCaptions(!showCaptions)}
+          onShareScreen={async () => {
+            try {
+              const screenStream = await webrtcService?.startScreenShare();
+              if (screenStream) {
+                toast.success("Screen sharing started");
               }
-            }}
-            onOpenChat={() => {
-              toast.info("Chat feature coming soon");
-            }}
-            onOpenSettings={() => {
-              toast.info("Settings coming soon");
-            }}
-          >
-            <TranscriptionControls
-              isTranscribing={isTranscribing}
-              showCaptions={showCaptions}
-              onToggleTranscription={toggleTranscription}
-              onToggleCaptions={() => setShowCaptions(!showCaptions)}
-            />
-          </ControlBar>
-          
-          <Button
-            variant="destructive"
-            className="ml-4 end-meeting"
-            onClick={() => setShowEndDialog(true)}
-          >
-            End Meeting
-          </Button>
-        </div>
+            } catch {
+              toast.error("Failed to start screen sharing");
+            }
+          }}
+          onEndMeeting={() => setShowEndDialog(true)}
+        />
       </div>
 
       <Sidebar>
@@ -257,22 +211,11 @@ const Index = () => {
         />
       </Sidebar>
 
-      <AlertDialog open={showEndDialog} onOpenChange={setShowEndDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>End Meeting</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to end the meeting? All participants will be disconnected.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={endMeeting} className="bg-destructive text-destructive-foreground">
-              End Meeting
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <EndMeetingDialog
+        open={showEndDialog}
+        onOpenChange={setShowEndDialog}
+        onConfirm={endMeeting}
+      />
     </div>
   );
 };
