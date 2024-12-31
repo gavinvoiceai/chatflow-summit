@@ -1,70 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { VideoGrid } from '@/components/VideoGrid';
 import { ControlBar } from '@/components/ControlBar';
-import { AIPanel } from '@/components/AIPanel';
-import { VoiceCommandIndicator } from '@/components/VoiceCommandIndicator';
-import { useToast } from '@/components/ui/use-toast';
-import { WebRTCService } from '@/services/webrtc';
-import { VoiceCommandService } from '@/services/voiceCommands';
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+
+type MeetingState = 'lobby' | 'inProgress' | 'ending';
 
 const Index = () => {
-  const { toast } = useToast();
-  const [audioEnabled, setAudioEnabled] = useState(true);
-  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [videoEnabled, setVideoEnabled] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [meetingState, setMeetingState] = useState<MeetingState>('lobby');
+  const [showEndDialog, setShowEndDialog] = useState(false);
   const [participants, setParticipants] = useState([
-    { id: 'local', name: 'You', videoEnabled: true, audioEnabled: true, isHost: true, isMainSpeaker: true },
+    { id: 'local', name: 'You', stream: null, videoEnabled: false, audioEnabled: false, isMainSpeaker: true }
   ]);
 
-  // Initialize WebRTC service
-  const [webRTCService] = useState(() => new WebRTCService((participantId, stream) => {
-    setParticipants(prev => prev.map(p => 
-      p.id === participantId ? { ...p, stream } : p
-    ));
-  }));
-
-  // Initialize voice command service
-  const [voiceCommandService] = useState(() => new VoiceCommandService(
-    (newTranscript) => setTranscript(newTranscript),
-    {
-      onCreateTask: (task) => {
-        toast.success(`New task created: ${task}`);
-      },
-      onScheduleMeeting: (details) => {
-        toast.success(`Meeting scheduled: ${details}`);
-      },
-      onSendSummary: (recipient) => {
-        toast.success(`Summary sent to ${recipient}`);
-      },
+  const initializeDevices = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      
+      setLocalStream(stream);
+      setParticipants(prev => prev.map(p => 
+        p.id === 'local' ? { ...p, stream, videoEnabled: true, audioEnabled: true } : p
+      ));
+      setVideoEnabled(true);
+      setAudioEnabled(true);
+      
+      toast.success("Camera and microphone connected successfully");
+    } catch (error) {
+      console.error('Error accessing media devices:', error);
+      toast.error("Failed to access camera or microphone");
     }
-  ));
+  };
 
-  // Initialize media stream
-  useEffect(() => {
-    const initializeStream = async () => {
-      try {
-        const stream = await webRTCService.initializeLocalStream();
-        setLocalStream(stream);
-        setParticipants(prev => prev.map(p => 
-          p.id === 'local' ? { ...p, stream } : p
-        ));
-      } catch (error) {
-        console.error('Failed to initialize stream:', error);
-        toast.error('Failed to access camera or microphone');
-      }
-    };
+  const stopMediaTracks = () => {
+    if (localStream) {
+      localStream.getTracks().forEach(track => {
+        track.stop();
+      });
+      setLocalStream(null);
+      setParticipants(prev => prev.map(p => 
+        p.id === 'local' ? { ...p, stream: null, videoEnabled: false, audioEnabled: false } : p
+      ));
+      setVideoEnabled(false);
+      setAudioEnabled(false);
+    }
+  };
 
-    initializeStream();
-
-    return () => {
-      webRTCService.closeAllConnections();
-    };
-  }, []);
-
-  // Handle media controls
   const toggleAudio = () => {
     if (localStream) {
       localStream.getAudioTracks().forEach(track => {
@@ -89,58 +86,92 @@ const Index = () => {
     }
   };
 
-  const toggleVoiceCommands = () => {
-    if (!voiceCommandsEnabled) {
-      voiceCommandService.start();
-      setIsListening(true);
-    } else {
-      voiceCommandService.stop();
-      setIsListening(false);
-    }
-    setVoiceCommandsEnabled(!voiceCommandsEnabled);
+  const startMeeting = async () => {
+    await initializeDevices();
+    setMeetingState('inProgress');
   };
 
+  const endMeeting = () => {
+    stopMediaTracks();
+    setMeetingState('lobby');
+    setShowEndDialog(false);
+    toast.success("Meeting ended");
+  };
+
+  useEffect(() => {
+    return () => {
+      stopMediaTracks();
+    };
+  }, []);
+
+  if (meetingState === 'lobby') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+        <h1 className="text-2xl font-bold mb-8">Start a New Meeting</h1>
+        <Button 
+          onClick={startMeeting}
+          size="lg"
+          className="bg-green-500 hover:bg-green-600 text-white px-8"
+        >
+          Start Meeting
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="conference-container h-screen flex">
+    <div className="conference-container">
       <div className="flex-1 relative">
         <VideoGrid participants={participants} />
         
-        <VoiceCommandIndicator
-          isListening={isListening}
-          transcript={transcript}
-        />
-      </div>
-      
-      <div className="w-80 border-l border-border">
-        <AIPanel
-          transcript={[
-            { id: '1', speaker: 'System', text: 'Meeting started', timestamp: new Date().toLocaleTimeString() }
-          ]}
-          actionItems={[]}
-          participants={participants}
-        />
+        <div className="controls-container">
+          <ControlBar
+            audioEnabled={audioEnabled}
+            videoEnabled={videoEnabled}
+            voiceCommandsEnabled={voiceCommandsEnabled}
+            onToggleAudio={toggleAudio}
+            onToggleVideo={toggleVideo}
+            onToggleVoiceCommands={() => {
+              setVoiceCommandsEnabled(!voiceCommandsEnabled);
+              toast.info(voiceCommandsEnabled ? "Voice commands disabled" : "Voice commands enabled");
+            }}
+            onShareScreen={() => {
+              toast.info("Screen sharing coming soon");
+            }}
+            onOpenChat={() => {
+              toast.info("Chat feature coming soon");
+            }}
+            onOpenSettings={() => {
+              toast.info("Settings coming soon");
+            }}
+          />
+          
+          <Button
+            variant="destructive"
+            className="ml-4"
+            onClick={() => setShowEndDialog(true)}
+          >
+            End Meeting
+          </Button>
+        </div>
       </div>
 
-      <div className="controls-container fixed bottom-0 left-0 right-0 p-4">
-        <ControlBar
-          audioEnabled={audioEnabled}
-          videoEnabled={videoEnabled}
-          voiceCommandsEnabled={voiceCommandsEnabled}
-          isListening={isListening}
-          onToggleAudio={toggleAudio}
-          onToggleVideo={toggleVideo}
-          onToggleVoiceCommands={toggleVoiceCommands}
-          onShareScreen={() => {
-            toast.info('Screen sharing coming soon');
-          }}
-          onOpenChat={() => {
-            toast.info('Chat feature coming soon');
-          }}
-          onOpenSettings={() => {
-            toast.info('Settings coming soon');
-          }}
-        />
-      </div>
+      <AlertDialog open={showEndDialog} onOpenChange={setShowEndDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>End Meeting</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to end the meeting? All participants will be disconnected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={endMeeting} className="bg-destructive text-destructive-foreground">
+              End Meeting
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

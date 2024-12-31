@@ -98,7 +98,7 @@
 }
 
 .controls-container {
-  @apply fixed bottom-0 left-0 right-0 p-4 flex justify-center;
+  @apply fixed bottom-0 left-0 right-0 p-4 flex justify-center items-center gap-2;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
 }
 
@@ -114,4 +114,38 @@
   @apply min-w-[90px] px-3 py-2 text-xs uppercase tracking-wide font-medium;
   @apply rounded-md transition-colors duration-200;
   @apply hover:bg-accent/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground;
+}
+
+.device-status {
+  @apply flex items-center gap-2 px-3 py-1 rounded-full text-sm;
+}
+
+.device-status.active {
+  @apply bg-cyan-500/10 text-cyan-500;
+}
+
+.device-status.warning {
+  @apply bg-red-500/10 text-red-500;
+}
+
+.meeting-status {
+  @apply px-3 py-1 rounded-full text-sm;
+  @apply bg-cyan-500/10 text-cyan-500;
+}
+
+.network-indicator {
+  @apply flex items-center gap-1 px-2 py-1 rounded-full text-xs;
+  @apply bg-background/80 backdrop-blur-sm;
+}
+
+.network-indicator.good {
+  @apply text-green-500;
+}
+
+.network-indicator.poor {
+  @apply text-yellow-500;
+}
+
+.network-indicator.bad {
+  @apply text-red-500;
 }
