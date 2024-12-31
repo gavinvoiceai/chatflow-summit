@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Video, VideoOff, Mic, MicOff, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { deviceManager } from '@/services/deviceManager';
 import { useParams } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
-import { Copy } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 export const MeetingSetupScreen = () => {
   const { meetingId } = useParams();
