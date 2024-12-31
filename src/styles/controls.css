@@ -5,9 +5,9 @@
 
 .control-bar {
   @apply flex items-center justify-center gap-4 px-6 py-3 rounded-full;
-  background-color: rgba(10, 10, 10, 0.8);
+  background-color: rgba(26, 26, 26, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.1);
 }
 
 .control-button {
@@ -21,7 +21,7 @@
 }
 
 .control-button.active {
-  @apply text-primary;
+  @apply text-accent;
   box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
 }
 
