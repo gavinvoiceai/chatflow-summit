@@ -3,7 +3,8 @@ import { VideoGrid } from '@/components/VideoGrid';
 import { ControlBar } from '@/components/ControlBar';
 import { Sidebar } from '@/components/Sidebar';
 import { WebRTCService } from '@/services/webrtc';
-import { VoiceCommandService, VoiceCommand } from '@/services/voiceCommands';
+import { VoiceCommand } from '@/services/voiceCommands';
+import { VoiceCommandManager } from '@/components/VoiceCommandManager';
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -22,15 +23,12 @@ type MeetingState = 'lobby' | 'connecting' | 'inProgress' | 'ending';
 const Index = () => {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [videoEnabled, setVideoEnabled] = useState(false);
-  const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
   const [meetingState, setMeetingState] = useState<MeetingState>('lobby');
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [participants, setParticipants] = useState([
     { id: 'local', name: 'You', stream: null, videoEnabled: false, audioEnabled: false, isMainSpeaker: true }
   ]);
   const [webrtcService, setWebrtcService] = useState<WebRTCService | null>(null);
-  const [voiceCommandService, setVoiceCommandService] = useState<VoiceCommandService | null>(null);
-  const [transcript, setTranscript] = useState('');
 
   const handleStreamUpdate = useCallback((streams: Map<string, MediaStream>) => {
     setParticipants(prev => prev.map(p => ({
@@ -55,15 +53,8 @@ const Index = () => {
 
   const initializeServices = useCallback(async () => {
     const webrtc = new WebRTCService(handleStreamUpdate);
-    const voice = new VoiceCommandService(
-      'meeting-id', // TODO: Replace with actual meeting ID
-      handleVoiceCommand,
-      setTranscript
-    );
-    
     setWebrtcService(webrtc);
-    setVoiceCommandService(voice);
-  }, [handleStreamUpdate, handleVoiceCommand]);
+  }, [handleStreamUpdate]);
 
   const startMeeting = async () => {
     try {
@@ -90,7 +81,6 @@ const Index = () => {
 
   const endMeeting = () => {
     webrtcService?.cleanup();
-    voiceCommandService?.stop();
     setMeetingState('lobby');
     setShowEndDialog(false);
     setParticipants([
@@ -123,21 +113,11 @@ const Index = () => {
     }
   };
 
-  const toggleVoiceCommands = () => {
-    if (voiceCommandsEnabled) {
-      voiceCommandService?.stop();
-    } else {
-      voiceCommandService?.start();
-    }
-    setVoiceCommandsEnabled(!voiceCommandsEnabled);
-  };
-
   useEffect(() => {
     return () => {
       webrtcService?.cleanup();
-      voiceCommandService?.stop();
     };
-  }, [webrtcService, voiceCommandService]);
+  }, [webrtcService]);
 
   if (meetingState === 'lobby') {
     return (
@@ -159,15 +139,20 @@ const Index = () => {
       <div className="flex-1 relative pr-[300px]">
         <VideoGrid participants={participants} />
         
+        <VoiceCommandManager
+          meetingId="meeting-id" // TODO: Replace with actual meeting ID
+          onCommand={handleVoiceCommand}
+        />
+        
         <div className="controls-container">
           <ControlBar
             audioEnabled={audioEnabled}
             videoEnabled={videoEnabled}
-            voiceCommandsEnabled={voiceCommandsEnabled}
-            isListening={voiceCommandsEnabled}
+            voiceCommandsEnabled={false}
+            isListening={false}
             onToggleAudio={toggleAudio}
             onToggleVideo={toggleVideo}
-            onToggleVoiceCommands={toggleVoiceCommands}
+            onToggleVoiceCommands={() => {}}
             onShareScreen={async () => {
               try {
                 const screenStream = await webrtcService?.startScreenShare();

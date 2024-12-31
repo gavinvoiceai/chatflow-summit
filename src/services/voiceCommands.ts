@@ -13,6 +13,7 @@ export class VoiceCommandService {
   private onCommand: (command: VoiceCommand) => void;
   private onTranscript: (text: string) => void;
   private wakeWord: string = 'magic';
+  private processingCommand: boolean = false;
 
   constructor(
     meetingId: string,
@@ -38,13 +39,19 @@ export class VoiceCommandService {
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
 
-      this.recognition.onresult = (event) => {
+      this.recognition.onresult = async (event) => {
         const transcript = Array.from(event.results)
           .map(result => result[0].transcript)
           .join(' ');
 
         this.onTranscript(transcript);
-        this.processCommand(transcript);
+        
+        // Analyze transcript in real-time for action items
+        if (!this.processingCommand) {
+          await this.aiAssistant.analyzeTranscriptInRealtime(transcript);
+        }
+        
+        await this.processCommand(transcript);
       };
 
       this.recognition.onerror = (event) => {
@@ -56,13 +63,15 @@ export class VoiceCommandService {
   }
 
   private async processCommand(transcript: string) {
-    const lowerTranscript = transcript.toLowerCase();
+    if (this.processingCommand) return;
     
+    const lowerTranscript = transcript.toLowerCase();
     if (!lowerTranscript.includes(this.wakeWord)) return;
 
-    const commandText = transcript.toLowerCase().split(this.wakeWord)[1].trim();
-    
     try {
+      this.processingCommand = true;
+      const commandText = transcript.toLowerCase().split(this.wakeWord)[1].trim();
+      
       if (commandText.startsWith('create task')) {
         const task = commandText.replace('create task', '').trim();
         await this.aiAssistant.createTask(task);
@@ -78,6 +87,8 @@ export class VoiceCommandService {
     } catch (error) {
       console.error('Error processing command:', error);
       toast.error('Failed to process command');
+    } finally {
+      this.processingCommand = false;
     }
   }
 
