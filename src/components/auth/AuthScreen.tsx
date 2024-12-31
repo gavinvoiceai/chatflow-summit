@@ -37,7 +37,9 @@ export const AuthScreen = () => {
         });
         
         if (error) {
-          if (error.message === 'Invalid login credentials') {
+          if (error.message === 'Email not confirmed') {
+            toast.error('Please check your email and confirm your account before signing in.');
+          } else if (error.message === 'Invalid login credentials') {
             toast.error('Invalid email or password. Please try again.');
           } else {
             toast.error(error.message);
