@@ -126,6 +126,9 @@ export type Database = {
           is_active: boolean | null
           meeting_name: string | null
           recording_url: string | null
+          scheduled_time: string | null
+          title: string | null
+          type: string | null
         }
         Insert: {
           created_at?: string | null
@@ -135,6 +138,9 @@ export type Database = {
           is_active?: boolean | null
           meeting_name?: string | null
           recording_url?: string | null
+          scheduled_time?: string | null
+          title?: string | null
+          type?: string | null
         }
         Update: {
           created_at?: string | null
@@ -144,6 +150,9 @@ export type Database = {
           is_active?: boolean | null
           meeting_name?: string | null
           recording_url?: string | null
+          scheduled_time?: string | null
+          title?: string | null
+          type?: string | null
         }
         Relationships: []
       }
