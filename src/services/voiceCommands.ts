@@ -46,7 +46,6 @@ export class VoiceCommandService {
 
         this.onTranscript(transcript);
         
-        // Analyze transcript in real-time for action items
         if (!this.processingCommand) {
           await this.aiAssistant.analyzeTranscriptInRealtime(transcript);
         }
@@ -71,18 +70,17 @@ export class VoiceCommandService {
     try {
       this.processingCommand = true;
       const commandText = transcript.toLowerCase().split(this.wakeWord)[1].trim();
+      const { type, payload } = await this.aiAssistant.processCommand(commandText);
       
-      if (commandText.startsWith('create task')) {
-        const task = commandText.replace('create task', '').trim();
-        await this.aiAssistant.createTask(task);
-        this.onCommand({ type: 'createTask', payload: task });
-      } else if (commandText.startsWith('schedule')) {
-        const details = commandText.replace('schedule', '').trim();
-        await this.aiAssistant.scheduleFollowup(details);
-        this.onCommand({ type: 'scheduleFollowup', payload: details });
-      } else if (commandText.startsWith('summarize')) {
+      if (type === 'createTask') {
+        await this.aiAssistant.createTask(payload);
+        this.onCommand({ type, payload });
+      } else if (type === 'scheduleFollowup') {
+        await this.aiAssistant.scheduleFollowup(payload);
+        this.onCommand({ type, payload });
+      } else if (type === 'summarize') {
         const summary = await this.aiAssistant.generateSummary();
-        this.onCommand({ type: 'summarize', payload: summary });
+        this.onCommand({ type, payload: summary });
       }
     } catch (error) {
       console.error('Error processing command:', error);

@@ -15,18 +15,16 @@ export class AIAssistantService {
     
     while (attempts < this.retryAttempts) {
       try {
-        const response = await fetch('/api/ai-assistant', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, content, meetingId: this.meetingId }),
+        const { data, error } = await supabase.functions.invoke('process-ai', {
+          body: { type, content }
         });
 
-        if (!response.ok) throw new Error('AI request failed');
-        
-        const data = await response.json();
+        if (error) throw error;
         return data.result;
       } catch (error) {
         attempts++;
+        console.error(`AI processing attempt ${attempts} failed:`, error);
+        
         if (attempts === this.retryAttempts) {
           toast.error('AI processing failed. Please try again.');
           throw error;
@@ -83,8 +81,6 @@ export class AIAssistantService {
     try {
       const result = await this.callAIFunction('processCommand', details);
       const { date, time, participants } = JSON.parse(result);
-      
-      // Here you would integrate with a calendar API
       toast.success('Follow-up scheduled successfully');
     } catch (error) {
       console.error('Error scheduling followup:', error);
@@ -119,7 +115,6 @@ export class AIAssistantService {
       const result = await this.callAIFunction('analyzeTranscript', transcript);
       const { actionItems, keyPoints } = JSON.parse(result);
 
-      // Store action items if found
       if (actionItems?.length > 0) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
@@ -135,7 +130,6 @@ export class AIAssistantService {
       }
     } catch (error) {
       console.error('Error analyzing transcript:', error);
-      // Don't show toast for real-time analysis errors to avoid spam
     }
   }
 }
