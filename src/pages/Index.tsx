@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { PreMeetingSetup } from '@/components/meeting/PreMeetingSetup';
 import { MeetingControls } from '@/components/meeting/MeetingControls';
 import { EndMeetingDialog } from '@/components/meeting/EndMeetingDialog';
+import { LobbyView } from '@/components/meeting/LobbyView';
 import { supabase } from "@/integrations/supabase/client";
 
 type MeetingState = 'setup' | 'connecting' | 'inProgress' | 'ending';
@@ -112,7 +113,7 @@ const Index = () => {
     deviceManager.cleanup();
     webrtcService?.cleanup();
     transcriptionService?.stop();
-    setMeetingState('lobby');
+    setMeetingState('setup');
     setShowEndDialog(false);
     setParticipants([
       { id: 'local', name: 'You', stream: null, videoEnabled: false, audioEnabled: false, isMainSpeaker: true }

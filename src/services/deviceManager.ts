@@ -32,6 +32,7 @@ class DeviceManager {
         audio: true
       };
 
+      console.log('Initializing devices with config:', streamConfig);
       const stream = await navigator.mediaDevices.getUserMedia(streamConfig);
       await this.validateStream(stream);
       this.currentStream = stream;
