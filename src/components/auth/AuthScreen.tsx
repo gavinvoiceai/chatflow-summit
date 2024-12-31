@@ -18,25 +18,38 @@ export const AuthScreen = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: window.location.origin
           }
         });
+        
         if (error) throw error;
-        else toast.success('Check your email to confirm your account!');
+        if (data.user) {
+          toast.success('Check your email to confirm your account!');
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password
         });
-        if (error) throw error;
+        
+        if (error) {
+          if (error.message === 'Invalid login credentials') {
+            toast.error('Invalid email or password. Please try again.');
+          } else {
+            toast.error(error.message);
+          }
+          throw error;
+        }
+        if (data.user) {
+          toast.success('Successfully signed in!');
+        }
       }
     } catch (error) {
       console.error('Auth error:', error);
-      toast.error('Failed to sign in. Please try again.');
     } finally {
       setLoading(false);
     }
