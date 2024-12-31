@@ -1,3 +1,4 @@
+/* Video Grid Layout */
 .video-grid {
   @apply grid gap-4 p-4;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -12,27 +13,49 @@
   @apply border-primary shadow-[0_0_15px_rgba(0,255,157,0.2)];
 }
 
-.main-speaker {
-  @apply w-full max-h-[60vh];
-}
-
-.secondary-container {
-  @apply grid gap-4;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
-@media (max-width: 768px) {
+/* Responsive Breakpoints */
+@media (max-width: 640px) {
   .video-grid {
     grid-template-columns: 1fr;
   }
-  
-  .secondary-container {
-    grid-template-columns: 1fr;
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .video-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
-  .secondary-container {
+  .video-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .video-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Control Bar */
+.controls-container {
+  @apply fixed bottom-0 left-0 right-0 p-4 flex justify-center items-center gap-2 z-50 bg-gradient-to-t from-background to-transparent;
+}
+
+@media (min-width: 768px) {
+  .controls-container {
+    @apply right-[320px];
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .controls-container {
+    @apply pb-safe;
+  }
+  
+  .video-container {
+    @apply rounded-none;
   }
 }

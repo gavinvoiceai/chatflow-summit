@@ -7,6 +7,8 @@ import { deviceManager } from '@/services/deviceManager';
 import { toast } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 export const VideoConferenceScreen = () => {
   const { meetingId } = useParams();
@@ -91,34 +93,50 @@ export const VideoConferenceScreen = () => {
     }
   ] : [];
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      <div className="flex-1 relative">
-        <ErrorBoundary>
-          <VideoGrid participants={participants} />
-        </ErrorBoundary>
+    <div className="relative h-screen bg-background overflow-hidden">
+      {/* End Meeting Button */}
+      <Button
+        variant="destructive"
+        size="sm"
+        className="absolute top-4 right-4 z-50 md:right-[336px]"
+        onClick={handleEndMeeting}
+      >
+        <X className="h-4 w-4 mr-2" />
+        End Meeting
+      </Button>
 
-        <MeetingControls
-          audioEnabled={audioEnabled}
-          videoEnabled={videoEnabled}
-          isTranscribing={isTranscribing}
-          showCaptions={showCaptions}
-          onToggleAudio={handleToggleAudio}
-          onToggleVideo={handleToggleVideo}
-          onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
-          onToggleCaptions={() => setShowCaptions(!showCaptions)}
-          onShareScreen={handleShareScreen}
-          onEndMeeting={handleEndMeeting}
+      <div className="flex h-full">
+        {/* Main Content Area */}
+        <div className="flex-1 relative">
+          <ErrorBoundary>
+            <VideoGrid participants={participants} />
+          </ErrorBoundary>
+
+          {/* Controls */}
+          <div className="fixed bottom-0 left-0 right-0 md:right-[320px] z-40">
+            <MeetingControls
+              audioEnabled={audioEnabled}
+              videoEnabled={videoEnabled}
+              isTranscribing={isTranscribing}
+              showCaptions={showCaptions}
+              onToggleAudio={handleToggleAudio}
+              onToggleVideo={handleToggleVideo}
+              onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
+              onToggleCaptions={() => setShowCaptions(!showCaptions)}
+              onShareScreen={handleShareScreen}
+              onEndMeeting={handleEndMeeting}
+            />
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <Sidebar 
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          isMobile={isMobile}
         />
       </div>
-      
-      <Sidebar 
-        isOpen={isSidebarOpen}
-        onToggle={toggleSidebar}
-        isMobile={isMobile}
-      />
     </div>
   );
 };
