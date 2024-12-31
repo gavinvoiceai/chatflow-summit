@@ -4,7 +4,7 @@
 }
 
 .control-bar {
-  @apply flex items-center justify-center gap-2 p-4 rounded-full bg-muted backdrop-blur-sm border border-border/10;
+  @apply flex items-center justify-center gap-2 p-4 rounded-full bg-muted/80 backdrop-blur-sm border border-border/10;
 }
 
 .control-button {
@@ -12,8 +12,8 @@
 }
 
 @media (max-width: 767px) {
-  .control-bar {
-    @apply w-[95%] justify-around;
+  .controls-container {
+    @apply w-[95%] bottom-20;
   }
   
   .control-button {

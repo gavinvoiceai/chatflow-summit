@@ -98,20 +98,19 @@ export const VideoConferenceScreen = () => {
             <div className="h-full pb-24 md:pb-20">
               <VideoGrid participants={participants} />
             </div>
+            <MeetingControls
+              audioEnabled={audioEnabled}
+              videoEnabled={videoEnabled}
+              isTranscribing={isTranscribing}
+              showCaptions={showCaptions}
+              onToggleAudio={handleToggleAudio}
+              onToggleVideo={handleToggleVideo}
+              onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
+              onToggleCaptions={() => setShowCaptions(!showCaptions)}
+              onShareScreen={handleShareScreen}
+              onEndMeeting={handleEndMeeting}
+            />
           </ErrorBoundary>
-
-          <MeetingControls
-            audioEnabled={audioEnabled}
-            videoEnabled={videoEnabled}
-            isTranscribing={isTranscribing}
-            showCaptions={showCaptions}
-            onToggleAudio={handleToggleAudio}
-            onToggleVideo={handleToggleVideo}
-            onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
-            onToggleCaptions={() => setShowCaptions(!showCaptions)}
-            onShareScreen={handleShareScreen}
-            onEndMeeting={handleEndMeeting}
-          />
         </div>
 
         <Sidebar 
