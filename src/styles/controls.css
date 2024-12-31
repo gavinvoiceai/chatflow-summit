@@ -1,6 +1,10 @@
+.controls-container {
+  @apply fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center z-50;
+  width: max-content;
+}
+
 .control-bar {
-  @apply fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 p-4 rounded-full bg-muted/80 backdrop-blur-sm border border-border/10 mx-auto z-40;
-  max-width: max-content;
+  @apply flex items-center justify-center gap-2 p-4 rounded-full bg-background/80 backdrop-blur-sm border border-border/10;
 }
 
 .control-button {
