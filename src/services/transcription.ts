@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { TranscriptionManager } from "./transcriptionManager";
+import { CaptionsManager } from "./captionsManager";
 import { toast } from "sonner";
 
 export interface TranscriptionSegment {
@@ -20,6 +21,7 @@ export class TranscriptionService {
   private onTranscriptUpdate: (segment: TranscriptionSegment) => void;
   private onCaptionUpdate: (text: string, speaker: string) => void;
   private transcriptionManager: TranscriptionManager;
+  private captionsManager: CaptionsManager;
   private buffer: TranscriptionBuffer = {
     text: '',
     timeoutId: null
@@ -39,6 +41,8 @@ export class TranscriptionService {
       'current-user-id',
       onCaptionUpdate
     );
+    
+    this.captionsManager = new CaptionsManager('You');
     
     this.initializeSpeechRecognition();
   }
@@ -71,6 +75,10 @@ export class TranscriptionService {
       const transcript = lastResult[0].transcript;
       const isFinal = lastResult.isFinal;
 
+      // Update captions immediately
+      const captionText = this.captionsManager.updateCaptions(transcript, isFinal);
+      this.onCaptionUpdate(captionText, currentSpeaker);
+
       if (isFinal) {
         this.commitTranscription(transcript, currentSpeaker);
       } else {
@@ -85,7 +93,6 @@ export class TranscriptionService {
     }
 
     this.buffer.text = text;
-    this.onCaptionUpdate(text, speaker);
 
     this.buffer.timeoutId = window.setTimeout(() => {
       if (this.buffer.text) {
@@ -132,6 +139,7 @@ export class TranscriptionService {
       clearTimeout(this.buffer.timeoutId);
       this.buffer.text = '';
     }
+    this.captionsManager.cleanup();
     this.transcriptionManager.cleanup();
   }
 }
