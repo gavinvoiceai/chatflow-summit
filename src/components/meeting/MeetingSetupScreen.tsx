@@ -17,9 +17,7 @@ export const MeetingSetupScreen = () => {
   useEffect(() => {
     initializeDevices();
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
+      deviceManager.cleanup();
     };
   }, []);
 

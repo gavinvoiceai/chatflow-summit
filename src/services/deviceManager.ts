@@ -34,58 +34,12 @@ class DeviceManager {
 
       console.log('Initializing devices with config:', streamConfig);
       const stream = await navigator.mediaDevices.getUserMedia(streamConfig);
-      await this.validateStream(stream);
       this.currentStream = stream;
       return stream;
     } catch (error) {
       console.error('Failed to initialize devices:', error);
       throw error;
     }
-  }
-
-  private validateStream(stream: MediaStream): Promise<MediaStream> {
-    return new Promise((resolve, reject) => {
-      const videoTrack = stream.getVideoTracks()[0];
-      
-      if (!videoTrack) {
-        reject(new Error('No video track available'));
-        return;
-      }
-
-      // Add track ended event listener
-      videoTrack.addEventListener('ended', () => {
-        console.error('Video track ended unexpectedly');
-      });
-
-      if (videoTrack.readyState === 'live') {
-        resolve(stream);
-        return;
-      }
-
-      const cleanup = () => {
-        videoTrack.removeEventListener('ended', handleEnded);
-        videoTrack.removeEventListener('mute', handleMute);
-      };
-
-      const handleEnded = () => {
-        cleanup();
-        reject(new Error('Video track ended'));
-      };
-
-      const handleMute = () => {
-        cleanup();
-        reject(new Error('Video track muted'));
-      };
-
-      videoTrack.addEventListener('ended', handleEnded);
-      videoTrack.addEventListener('mute', handleMute);
-
-      // Grace period for stream initialization
-      setTimeout(() => {
-        cleanup();
-        resolve(stream);
-      }, 1000);
-    });
   }
 
   async toggleAudio(enabled: boolean): Promise<void> {
