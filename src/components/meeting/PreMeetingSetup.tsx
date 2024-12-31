@@ -5,11 +5,8 @@ import { Video, Mic, MicOff, VideoOff } from 'lucide-react';
 import { toast } from "sonner";
 import { deviceManager } from '@/services/deviceManager';
 import { supabase } from "@/integrations/supabase/client";
-
-interface DeviceInfo {
-  deviceId: string;
-  label: string;
-}
+import { usePreferences } from '@/hooks/usePreferences';
+import { useDevices } from '@/hooks/useDevices';
 
 interface PreMeetingSetupProps {
   onJoinMeeting: () => Promise<void>;
@@ -17,75 +14,30 @@ interface PreMeetingSetupProps {
 
 export const PreMeetingSetup: React.FC<PreMeetingSetupProps> = ({ onJoinMeeting }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoDevices, setVideoDevices] = useState<DeviceInfo[]>([]);
-  const [audioDevices, setAudioDevices] = useState<DeviceInfo[]>([]);
+  const { videoDevices, audioDevices, isLoading: devicesLoading } = useDevices();
   const [selectedVideoDevice, setSelectedVideoDevice] = useState<string>('');
   const [selectedAudioDevice, setSelectedAudioDevice] = useState<string>('');
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { loadPreferences, savePreferences } = usePreferences();
 
   useEffect(() => {
-    initializeDevices();
-    loadUserPreferences();
+    initializeSetup();
   }, []);
 
-  const initializeDevices = async () => {
+  const initializeSetup = async () => {
     try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      
-      const videoDevs = devices.filter(device => device.kind === 'videoinput');
-      const audioDevs = devices.filter(device => device.kind === 'audioinput');
-      
-      setVideoDevices(videoDevs.map(d => ({ deviceId: d.deviceId, label: d.label || `Camera ${d.deviceId.slice(0, 5)}` })));
-      setAudioDevices(audioDevs.map(d => ({ deviceId: d.deviceId, label: d.label || `Microphone ${d.deviceId.slice(0, 5)}` })));
-      
-      if (videoDevs.length > 0) setSelectedVideoDevice(videoDevs[0].deviceId);
-      if (audioDevs.length > 0) setSelectedAudioDevice(audioDevs[0].deviceId);
-      
-      await startVideoPreview();
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Failed to initialize devices:', error);
-      toast.error('Failed to initialize devices. Please check your permissions.');
-      setIsLoading(false);
-    }
-  };
-
-  const loadUserPreferences = async () => {
-    try {
-      const { data: preferences } = await supabase
-        .from('user_preferences')
-        .select('*')
-        .single();
-
+      const preferences = await loadPreferences();
       if (preferences) {
         setSelectedVideoDevice(preferences.preferred_camera_id || '');
         setSelectedAudioDevice(preferences.preferred_microphone_id || '');
         setIsVideoEnabled(preferences.camera_enabled);
         setIsAudioEnabled(preferences.microphone_enabled);
       }
+      await startVideoPreview();
     } catch (error) {
-      console.error('Failed to load preferences:', error);
-    }
-  };
-
-  const saveUserPreferences = async () => {
-    try {
-      const { error } = await supabase
-        .from('user_preferences')
-        .upsert({
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          preferred_camera_id: selectedVideoDevice,
-          preferred_microphone_id: selectedAudioDevice,
-          camera_enabled: isVideoEnabled,
-          microphone_enabled: isAudioEnabled,
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Failed to save preferences:', error);
-      toast.error('Failed to save preferences');
+      console.error('Failed to initialize setup:', error);
+      toast.error('Failed to initialize setup. Please check your permissions.');
     }
   };
 
@@ -100,7 +52,6 @@ export const PreMeetingSetup: React.FC<PreMeetingSetupProps> = ({ onJoinMeeting 
         videoRef.current.srcObject = stream;
       }
       
-      // Set initial device states
       stream.getVideoTracks().forEach(track => track.enabled = isVideoEnabled);
       stream.getAudioTracks().forEach(track => track.enabled = isAudioEnabled);
     } catch (error) {
@@ -129,14 +80,35 @@ export const PreMeetingSetup: React.FC<PreMeetingSetupProps> = ({ onJoinMeeting 
   };
 
   const handleJoinMeeting = async () => {
-    await saveUserPreferences();
-    await onJoinMeeting();
+    try {
+      const user = await supabase.auth.getUser();
+      if (!user.data.user) {
+        toast.error('Please sign in to join the meeting');
+        return;
+      }
+
+      await savePreferences({
+        user_id: user.data.user.id,
+        preferred_camera_id: selectedVideoDevice,
+        preferred_microphone_id: selectedAudioDevice,
+        camera_enabled: isVideoEnabled,
+        microphone_enabled: isAudioEnabled,
+      });
+
+      await onJoinMeeting();
+    } catch (error) {
+      console.error('Failed to join meeting:', error);
+      toast.error('Failed to join meeting');
+    }
   };
+
+  if (devicesLoading) {
+    return <div>Loading devices...</div>;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <div className="w-full max-w-2xl space-y-8">
-        {/* Video Preview */}
         <div className="relative aspect-video bg-secondary rounded-lg overflow-hidden">
           <video
             ref={videoRef}
@@ -152,7 +124,6 @@ export const PreMeetingSetup: React.FC<PreMeetingSetupProps> = ({ onJoinMeeting 
           )}
         </div>
 
-        {/* Device Controls */}
         <div className="space-y-4">
           <div className="flex gap-4">
             <Select
@@ -206,11 +177,10 @@ export const PreMeetingSetup: React.FC<PreMeetingSetupProps> = ({ onJoinMeeting 
           </div>
         </div>
 
-        {/* Join/Create Meeting Buttons */}
         <div className="flex justify-center gap-4">
           <Button
             onClick={handleJoinMeeting}
-            disabled={isLoading}
+            disabled={devicesLoading}
             className="w-40"
           >
             Join Meeting
