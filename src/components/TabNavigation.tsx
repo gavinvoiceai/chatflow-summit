@@ -42,9 +42,9 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={cn(
-            "tab-button p-2 rounded-md transition-colors",
-            "hover:bg-accent/10",
-            activeTab === tab.id && "bg-accent/10 text-accent"
+            "tab-button p-2 rounded-md transition-colors duration-200",
+            "hover:bg-accent/10 hover:shadow-[0_0_10px_rgba(0,255,157,0.2)]",
+            activeTab === tab.id && "bg-accent/10 text-accent shadow-[0_0_15px_rgba(0,255,157,0.3)]"
           )}
           aria-label={tab.ariaLabel}
           aria-selected={activeTab === tab.id}

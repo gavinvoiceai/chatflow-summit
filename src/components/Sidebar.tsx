@@ -48,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/10 bg-background/80 backdrop-blur-sm">
           <Input
             placeholder="Ask AI Assistant..."
-            className="w-full bg-background/50"
+            className="w-full bg-background/50 border-accent/20 focus:border-accent/50 focus:ring-accent/20 focus:shadow-[0_0_15px_rgba(0,255,157,0.2)] transition-all duration-200"
           />
         </div>
       </div>
