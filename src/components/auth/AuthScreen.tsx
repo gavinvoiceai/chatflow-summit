@@ -1,20 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Mail, Google } from "lucide-react";
+import { Mail, Chrome } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-const signInMethods = [
-  {
-    provider: 'google',
-    icon: <Google className="h-4 w-4" />,
-    label: 'Continue with Google'
-  },
-  {
-    provider: 'email',
-    icon: <Mail className="h-4 w-4" />,
-    label: 'Continue with Email'
-  }
-];
 
 export const AuthScreen = () => {
   const handleSignIn = async (provider: string) => {
@@ -29,8 +16,11 @@ export const AuthScreen = () => {
         if (error) throw error;
       } else {
         // For demo purposes, we'll use the magic link signin
+        const email = prompt('Please enter your email:');
+        if (!email) return;
+        
         const { error } = await supabase.auth.signInWithOtp({
-          email: prompt('Please enter your email:') || '',
+          email,
           options: {
             emailRedirectTo: window.location.origin
           }
@@ -44,6 +34,19 @@ export const AuthScreen = () => {
     }
   };
 
+  const signInMethods = [
+    {
+      provider: 'google',
+      icon: <Chrome className="h-4 w-4" />,
+      label: 'Continue with Google'
+    },
+    {
+      provider: 'email',
+      icon: <Mail className="h-4 w-4" />,
+      label: 'Continue with Email'
+    }
+  ];
+
   return (
     <div className="flex flex-col items-center gap-6 p-8">
       <h1 className="text-2xl font-semibold">Sign in to join meeting</h1>
@@ -56,10 +59,12 @@ export const AuthScreen = () => {
             variant="outline"
           >
             {method.icon}
-            <span>{method.label}</span>
+            <span className="ml-2">{method.label}</span>
           </Button>
         ))}
       </div>
     </div>
   );
 };
+
+export default AuthScreen;
