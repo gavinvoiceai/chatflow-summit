@@ -57,7 +57,8 @@ export class TranscriptionManager {
     }
   };
 
-  private async commitTranscription(text: string) {
+  // Make commitTranscription public to fix accessibility error
+  public async commitTranscription(text: string) {
     const content = text || this.bufferState.currentBuffer.trim();
     if (!content) return;
 
@@ -68,12 +69,17 @@ export class TranscriptionManager {
         meeting_id: this.meetingId
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error committing transcription:', error);
+        toast.error("Failed to save transcription");
+        throw error;
+      }
       
       this.bufferState.currentBuffer = "";
     } catch (error) {
       console.error('Error committing transcription:', error);
       toast.error("Failed to save transcription");
+      throw error;
     }
   }
 

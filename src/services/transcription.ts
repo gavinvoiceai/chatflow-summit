@@ -80,7 +80,13 @@ export class TranscriptionService {
       this.onCaptionUpdate(captionText, currentSpeaker);
 
       if (isFinal) {
-        this.commitTranscription(transcript, currentSpeaker);
+        void this.transcriptionManager.commitTranscription(transcript);
+        this.onTranscriptUpdate({
+          speaker: currentSpeaker,
+          timestamp: new Date(),
+          content: transcript,
+          isInterim: false
+        });
       } else {
         this.bufferTranscription(transcript, currentSpeaker);
       }
@@ -96,27 +102,16 @@ export class TranscriptionService {
 
     this.buffer.timeoutId = window.setTimeout(() => {
       if (this.buffer.text) {
-        this.commitTranscription(this.buffer.text, speaker);
+        void this.transcriptionManager.commitTranscription(this.buffer.text);
+        this.onTranscriptUpdate({
+          speaker,
+          timestamp: new Date(),
+          content: this.buffer.text,
+          isInterim: false
+        });
         this.buffer.text = '';
       }
     }, 1000) as unknown as number;
-  }
-
-  private async commitTranscription(text: string, speaker: string) {
-    try {
-      const segment: TranscriptionSegment = {
-        speaker,
-        timestamp: new Date(),
-        content: text,
-        isInterim: false
-      };
-
-      await this.transcriptionManager.commitTranscription(text);
-      this.onTranscriptUpdate(segment);
-    } catch (error) {
-      console.error('Error committing transcription:', error);
-      toast.error("Failed to save transcription");
-    }
   }
 
   private handleSpeechError(error: SpeechRecognitionError) {
