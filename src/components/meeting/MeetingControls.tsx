@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ControlBar } from '@/components/ControlBar';
 import { TranscriptionControls } from '@/components/TranscriptionControls';
+import { X } from 'lucide-react';
 
 interface MeetingControlsProps {
   audioEnabled: boolean;
@@ -48,15 +49,15 @@ export const MeetingControls: React.FC<MeetingControlsProps> = ({
           onToggleTranscription={onToggleTranscription}
           onToggleCaptions={onToggleCaptions}
         />
+        <Button
+          variant="destructive"
+          size="icon"
+          className="ml-2"
+          onClick={onEndMeeting}
+        >
+          <X className="h-5 w-5" />
+        </Button>
       </ControlBar>
-      
-      <Button
-        variant="destructive"
-        className="ml-4 end-meeting"
-        onClick={onEndMeeting}
-      >
-        End Meeting
-      </Button>
     </div>
   );
 };

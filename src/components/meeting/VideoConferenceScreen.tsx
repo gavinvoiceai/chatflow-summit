@@ -7,8 +7,6 @@ import { deviceManager } from '@/services/deviceManager';
 import { toast } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 
 export const VideoConferenceScreen = () => {
   const { meetingId } = useParams();
@@ -67,7 +65,6 @@ export const VideoConferenceScreen = () => {
         video: true,
         audio: true
       });
-      // Handle screen sharing stream
       toast.success('Screen sharing started');
     } catch (error) {
       console.error('Failed to start screen sharing:', error);
@@ -95,21 +92,7 @@ export const VideoConferenceScreen = () => {
 
   return (
     <div className="relative h-screen bg-background overflow-hidden">
-      {/* End Meeting Button - Only show on mobile */}
-      {isMobile && (
-        <Button
-          variant="destructive"
-          size="sm"
-          className="absolute top-4 right-4 z-50"
-          onClick={handleEndMeeting}
-        >
-          <X className="h-4 w-4 mr-2" />
-          End Meeting
-        </Button>
-      )}
-
       <div className="flex h-full">
-        {/* Main Content Area */}
         <div className="flex-1 relative">
           <ErrorBoundary>
             <div className="h-full pb-24 md:pb-20">
@@ -117,24 +100,20 @@ export const VideoConferenceScreen = () => {
             </div>
           </ErrorBoundary>
 
-          {/* Controls - Fixed at bottom */}
-          <div className="fixed bottom-0 left-0 right-0 md:right-[320px] p-4 bg-background/80 backdrop-blur-sm border-t border-border/10 z-40">
-            <MeetingControls
-              audioEnabled={audioEnabled}
-              videoEnabled={videoEnabled}
-              isTranscribing={isTranscribing}
-              showCaptions={showCaptions}
-              onToggleAudio={handleToggleAudio}
-              onToggleVideo={handleToggleVideo}
-              onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
-              onToggleCaptions={() => setShowCaptions(!showCaptions)}
-              onShareScreen={handleShareScreen}
-              onEndMeeting={handleEndMeeting}
-            />
-          </div>
+          <MeetingControls
+            audioEnabled={audioEnabled}
+            videoEnabled={videoEnabled}
+            isTranscribing={isTranscribing}
+            showCaptions={showCaptions}
+            onToggleAudio={handleToggleAudio}
+            onToggleVideo={handleToggleVideo}
+            onToggleTranscription={() => setIsTranscribing(!isTranscribing)}
+            onToggleCaptions={() => setShowCaptions(!showCaptions)}
+            onShareScreen={handleShareScreen}
+            onEndMeeting={handleEndMeeting}
+          />
         </div>
 
-        {/* Sidebar - Fixed width on desktop */}
         <Sidebar 
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
