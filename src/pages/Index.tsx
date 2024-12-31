@@ -2,26 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { VideoGrid } from '@/components/VideoGrid';
 import { ControlBar } from '@/components/ControlBar';
 import { AIPanel } from '@/components/AIPanel';
+import { VoiceCommandIndicator } from '@/components/VoiceCommandIndicator';
 import { useToast } from '@/components/ui/use-toast';
-
-const mockParticipants = [
-  { id: '1', name: 'You', videoEnabled: true, audioEnabled: true, isHost: true, isMainSpeaker: true },
-  { id: '2', name: 'John Doe', videoEnabled: true, audioEnabled: false },
-  { id: '3', name: 'Jane Smith', videoEnabled: true, audioEnabled: true },
-  { id: '4', name: 'Mike Johnson', videoEnabled: true, audioEnabled: true },
-];
-
-const mockTranscript = [
-  { id: '1', speaker: 'John Doe', text: "Let's discuss the project timeline.", timestamp: '10:30 AM' },
-  { id: '2', speaker: 'You', text: "I think we should focus on the MVP first.", timestamp: '10:31 AM' },
-  { id: '3', speaker: 'Jane Smith', text: "I agree, that makes sense.", timestamp: '10:31 AM' },
-];
-
-const mockActionItems = [
-  { id: '1', text: 'Create project timeline', completed: true },
-  { id: '2', text: 'Schedule follow-up meeting', completed: false },
-  { id: '3', text: 'Share MVP requirements', completed: false },
-];
+import { WebRTCService } from '@/services/webrtc';
+import { VoiceCommandService } from '@/services/voiceCommands';
 
 const Index = () => {
   const { toast } = useToast();
@@ -30,113 +14,131 @@ const Index = () => {
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [participants, setParticipants] = useState([
+    { id: 'local', name: 'You', videoEnabled: true, audioEnabled: true, isHost: true, isMainSpeaker: true },
+  ]);
 
-  useEffect(() => {
-    if (!voiceCommandsEnabled) return;
+  // Initialize WebRTC service
+  const [webRTCService] = useState(() => new WebRTCService((participantId, stream) => {
+    setParticipants(prev => prev.map(p => 
+      p.id === participantId ? { ...p, stream } : p
+    ));
+  }));
 
-    let recognition: SpeechRecognition | null = null;
-    
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-        toast({
-          title: "Voice Commands Active",
-          description: "Say 'Magic' followed by your command",
-        });
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0])
-          .map(result => result.transcript)
-          .join('');
-        
-        setTranscript(transcript);
-
-        // Process voice commands
-        if (transcript.toLowerCase().includes('magic')) {
-          const command = transcript.toLowerCase().split('magic')[1].trim();
-          
-          if (command.startsWith('create task')) {
-            const task = command.replace('create task', '').trim();
-            toast({
-              title: "New Task Created",
-              description: task,
-            });
-          } else if (command.startsWith('schedule meeting')) {
-            const details = command.replace('schedule meeting', '').trim();
-            toast({
-              title: "Meeting Scheduled",
-              description: details,
-            });
-          } else if (command.startsWith('send summary')) {
-            const recipient = command.replace('send summary', '').trim();
-            toast({
-              title: "Summary Sent",
-              description: `Summary sent to ${recipient}`,
-            });
-          }
-        }
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-        toast({
-          title: "Voice Command Error",
-          description: "Failed to process voice command",
-          variant: "destructive",
-        });
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognition.start();
-    } else {
-      toast({
-        title: "Voice Commands Unavailable",
-        description: "Your browser doesn't support voice recognition",
-        variant: "destructive",
-      });
+  // Initialize voice command service
+  const [voiceCommandService] = useState(() => new VoiceCommandService(
+    (newTranscript) => setTranscript(newTranscript),
+    {
+      onCreateTask: (task) => {
+        toast.success(`New task created: ${task}`);
+      },
+      onScheduleMeeting: (details) => {
+        toast.success(`Meeting scheduled: ${details}`);
+      },
+      onSendSummary: (recipient) => {
+        toast.success(`Summary sent to ${recipient}`);
+      },
     }
+  ));
 
-    return () => {
-      if (recognition) {
-        recognition.stop();
+  // Initialize media stream
+  useEffect(() => {
+    const initializeStream = async () => {
+      try {
+        const stream = await webRTCService.initializeLocalStream();
+        setLocalStream(stream);
+        setParticipants(prev => prev.map(p => 
+          p.id === 'local' ? { ...p, stream } : p
+        ));
+      } catch (error) {
+        console.error('Failed to initialize stream:', error);
+        toast.error('Failed to access camera or microphone');
       }
     };
-  }, [voiceCommandsEnabled]);
+
+    initializeStream();
+
+    return () => {
+      webRTCService.closeAllConnections();
+    };
+  }, []);
+
+  // Handle media controls
+  const toggleAudio = () => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = !audioEnabled;
+      });
+      setAudioEnabled(!audioEnabled);
+      setParticipants(prev => prev.map(p => 
+        p.id === 'local' ? { ...p, audioEnabled: !audioEnabled } : p
+      ));
+    }
+  };
+
+  const toggleVideo = () => {
+    if (localStream) {
+      localStream.getVideoTracks().forEach(track => {
+        track.enabled = !videoEnabled;
+      });
+      setVideoEnabled(!videoEnabled);
+      setParticipants(prev => prev.map(p => 
+        p.id === 'local' ? { ...p, videoEnabled: !videoEnabled } : p
+      ));
+    }
+  };
+
+  const toggleVoiceCommands = () => {
+    if (!voiceCommandsEnabled) {
+      voiceCommandService.start();
+      setIsListening(true);
+    } else {
+      voiceCommandService.stop();
+      setIsListening(false);
+    }
+    setVoiceCommandsEnabled(!voiceCommandsEnabled);
+  };
 
   return (
-    <div className="conference-container">
-      <VideoGrid participants={mockParticipants} />
+    <div className="conference-container h-screen flex">
+      <div className="flex-1 relative">
+        <VideoGrid participants={participants} />
+        
+        <VoiceCommandIndicator
+          isListening={isListening}
+          transcript={transcript}
+        />
+      </div>
       
-      <div className="sidebar">
+      <div className="w-80 border-l border-border">
         <AIPanel
-          transcript={mockTranscript}
-          actionItems={mockActionItems}
-          participants={mockParticipants}
+          transcript={[
+            { id: '1', speaker: 'System', text: 'Meeting started', timestamp: new Date().toLocaleTimeString() }
+          ]}
+          actionItems={[]}
+          participants={participants}
         />
       </div>
 
-      <div className="controls-container">
+      <div className="controls-container fixed bottom-0 left-0 right-0 p-4">
         <ControlBar
           audioEnabled={audioEnabled}
           videoEnabled={videoEnabled}
           voiceCommandsEnabled={voiceCommandsEnabled}
           isListening={isListening}
-          onToggleAudio={() => setAudioEnabled(!audioEnabled)}
-          onToggleVideo={() => setVideoEnabled(!videoEnabled)}
-          onToggleVoiceCommands={() => setVoiceCommandsEnabled(!voiceCommandsEnabled)}
-          onShareScreen={() => console.log('Share screen')}
-          onOpenChat={() => console.log('Open chat')}
-          onOpenSettings={() => console.log('Open settings')}
+          onToggleAudio={toggleAudio}
+          onToggleVideo={toggleVideo}
+          onToggleVoiceCommands={toggleVoiceCommands}
+          onShareScreen={() => {
+            toast.info('Screen sharing coming soon');
+          }}
+          onOpenChat={() => {
+            toast.info('Chat feature coming soon');
+          }}
+          onOpenSettings={() => {
+            toast.info('Settings coming soon');
+          }}
         />
       </div>
     </div>
