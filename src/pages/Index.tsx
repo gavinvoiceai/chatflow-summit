@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { VideoGrid } from '@/components/VideoGrid';
 import { ControlBar } from '@/components/ControlBar';
 import { Sidebar } from '@/components/Sidebar';
+import { WebRTCService } from '@/services/webrtc';
+import { VoiceCommandService, VoiceCommand } from '@/services/voiceCommands';
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -15,57 +17,93 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 
-type MeetingState = 'lobby' | 'inProgress' | 'ending';
+type MeetingState = 'lobby' | 'connecting' | 'inProgress' | 'ending';
 
 const Index = () => {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [meetingState, setMeetingState] = useState<MeetingState>('lobby');
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [participants, setParticipants] = useState([
     { id: 'local', name: 'You', stream: null, videoEnabled: false, audioEnabled: false, isMainSpeaker: true }
   ]);
+  const [webrtcService, setWebrtcService] = useState<WebRTCService | null>(null);
+  const [voiceCommandService, setVoiceCommandService] = useState<VoiceCommandService | null>(null);
+  const [transcript, setTranscript] = useState('');
 
-  const initializeDevices = async () => {
+  const handleStreamUpdate = useCallback((streams: Map<string, MediaStream>) => {
+    setParticipants(prev => prev.map(p => ({
+      ...p,
+      stream: streams.get(p.id) || null
+    })));
+  }, []);
+
+  const handleVoiceCommand = useCallback((command: VoiceCommand) => {
+    switch (command.type) {
+      case 'createTask':
+        toast.success(`Created task: ${command.payload}`);
+        break;
+      case 'scheduleMeeting':
+        toast.success(`Scheduled meeting: ${command.payload}`);
+        break;
+      case 'setReminder':
+        toast.success(`Set reminder: ${command.payload}`);
+        break;
+      case 'shareDocument':
+        toast.success(`Sharing document: ${command.payload}`);
+        break;
+    }
+  }, []);
+
+  const initializeServices = useCallback(async () => {
+    const webrtc = new WebRTCService(handleStreamUpdate);
+    const voice = new VoiceCommandService(
+      handleVoiceCommand,
+      (text) => setTranscript(text)
+    );
+    
+    setWebrtcService(webrtc);
+    setVoiceCommandService(voice);
+  }, [handleStreamUpdate, handleVoiceCommand]);
+
+  const startMeeting = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
+      setMeetingState('connecting');
+      await initializeServices();
       
-      setLocalStream(stream);
-      setParticipants(prev => prev.map(p => 
-        p.id === 'local' ? { ...p, stream, videoEnabled: true, audioEnabled: true } : p
-      ));
-      setVideoEnabled(true);
-      setAudioEnabled(true);
+      if (webrtcService) {
+        const stream = await webrtcService.initializeLocalStream();
+        setParticipants(prev => prev.map(p => 
+          p.id === 'local' ? { ...p, stream, videoEnabled: true, audioEnabled: true } : p
+        ));
+        setVideoEnabled(true);
+        setAudioEnabled(true);
+      }
       
-      toast.success("Camera and microphone connected successfully");
+      setMeetingState('inProgress');
+      toast.success("Meeting started successfully");
     } catch (error) {
-      console.error('Error accessing media devices:', error);
-      toast.error("Failed to access camera or microphone");
+      console.error('Error starting meeting:', error);
+      toast.error("Failed to start meeting");
+      setMeetingState('lobby');
     }
   };
 
-  const stopMediaTracks = () => {
-    if (localStream) {
-      localStream.getTracks().forEach(track => {
-        track.stop();
-      });
-      setLocalStream(null);
-      setParticipants(prev => prev.map(p => 
-        p.id === 'local' ? { ...p, stream: null, videoEnabled: false, audioEnabled: false } : p
-      ));
-      setVideoEnabled(false);
-      setAudioEnabled(false);
-    }
+  const endMeeting = () => {
+    webrtcService?.cleanup();
+    voiceCommandService?.stop();
+    setMeetingState('lobby');
+    setShowEndDialog(false);
+    setParticipants([
+      { id: 'local', name: 'You', stream: null, videoEnabled: false, audioEnabled: false, isMainSpeaker: true }
+    ]);
+    toast.success("Meeting ended");
   };
 
   const toggleAudio = () => {
-    if (localStream) {
-      localStream.getAudioTracks().forEach(track => {
+    if (participants[0].stream) {
+      participants[0].stream.getAudioTracks().forEach(track => {
         track.enabled = !audioEnabled;
       });
       setAudioEnabled(!audioEnabled);
@@ -76,8 +114,8 @@ const Index = () => {
   };
 
   const toggleVideo = () => {
-    if (localStream) {
-      localStream.getVideoTracks().forEach(track => {
+    if (participants[0].stream) {
+      participants[0].stream.getVideoTracks().forEach(track => {
         track.enabled = !videoEnabled;
       });
       setVideoEnabled(!videoEnabled);
@@ -87,23 +125,21 @@ const Index = () => {
     }
   };
 
-  const startMeeting = async () => {
-    await initializeDevices();
-    setMeetingState('inProgress');
-  };
-
-  const endMeeting = () => {
-    stopMediaTracks();
-    setMeetingState('lobby');
-    setShowEndDialog(false);
-    toast.success("Meeting ended");
+  const toggleVoiceCommands = () => {
+    if (voiceCommandsEnabled) {
+      voiceCommandService?.stop();
+    } else {
+      voiceCommandService?.start();
+    }
+    setVoiceCommandsEnabled(!voiceCommandsEnabled);
   };
 
   useEffect(() => {
     return () => {
-      stopMediaTracks();
+      webrtcService?.cleanup();
+      voiceCommandService?.stop();
     };
-  }, []);
+  }, [webrtcService, voiceCommandService]);
 
   if (meetingState === 'lobby') {
     return (
@@ -112,7 +148,7 @@ const Index = () => {
         <Button 
           onClick={startMeeting}
           size="lg"
-          className="bg-green-500 hover:bg-green-600 text-white px-8"
+          className="start-meeting"
         >
           Start Meeting
         </Button>
@@ -130,14 +166,19 @@ const Index = () => {
             audioEnabled={audioEnabled}
             videoEnabled={videoEnabled}
             voiceCommandsEnabled={voiceCommandsEnabled}
+            isListening={voiceCommandsEnabled}
             onToggleAudio={toggleAudio}
             onToggleVideo={toggleVideo}
-            onToggleVoiceCommands={() => {
-              setVoiceCommandsEnabled(!voiceCommandsEnabled);
-              toast.info(voiceCommandsEnabled ? "Voice commands disabled" : "Voice commands enabled");
-            }}
-            onShareScreen={() => {
-              toast.info("Screen sharing coming soon");
+            onToggleVoiceCommands={toggleVoiceCommands}
+            onShareScreen={async () => {
+              try {
+                const screenStream = await webrtcService?.startScreenShare();
+                if (screenStream) {
+                  toast.success("Screen sharing started");
+                }
+              } catch {
+                toast.error("Failed to start screen sharing");
+              }
             }}
             onOpenChat={() => {
               toast.info("Chat feature coming soon");
@@ -149,7 +190,7 @@ const Index = () => {
           
           <Button
             variant="destructive"
-            className="ml-4"
+            className="ml-4 end-meeting"
             onClick={() => setShowEndDialog(true)}
           >
             End Meeting

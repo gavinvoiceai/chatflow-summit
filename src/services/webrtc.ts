@@ -1,14 +1,60 @@
 import { toast } from "sonner";
 
-export class WebRTCService {
-  private peerConnections: Map<string, RTCPeerConnection> = new Map();
-  private localStream: MediaStream | null = null;
-  private onParticipantStreamHandler: (participantId: string, stream: MediaStream) => void;
+interface PeerConnection {
+  connection: RTCPeerConnection;
+  stream: MediaStream | null;
+}
 
-  constructor(
-    onParticipantStream: (participantId: string, stream: MediaStream) => void
-  ) {
-    this.onParticipantStreamHandler = onParticipantStream;
+export class WebRTCService {
+  private peerConnections: Map<string, PeerConnection> = new Map();
+  private localStream: MediaStream | null = null;
+  private onStreamUpdate: (streams: Map<string, MediaStream>) => void;
+
+  constructor(onStreamUpdate: (streams: Map<string, MediaStream>) => void) {
+    this.onStreamUpdate = onStreamUpdate;
+  }
+
+  private async setupPeerConnection(participantId: string): Promise<RTCPeerConnection> {
+    const config = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    };
+
+    const connection = new RTCPeerConnection(config);
+    
+    // Handle ICE candidates
+    connection.onicecandidate = (event) => {
+      if (event.candidate) {
+        // Send candidate to signaling server
+        console.log('New ICE candidate:', event.candidate);
+      }
+    };
+
+    // Handle connection state changes
+    connection.onconnectionstatechange = () => {
+      console.log(`Connection state for ${participantId}:`, connection.connectionState);
+      if (connection.connectionState === 'failed') {
+        toast.error(`Connection failed with participant ${participantId}`);
+        this.removePeer(participantId);
+      }
+    };
+
+    // Handle incoming tracks
+    connection.ontrack = (event) => {
+      const streams = new Map<string, MediaStream>();
+      this.peerConnections.forEach((peer, id) => {
+        if (peer.stream) streams.set(id, peer.stream);
+      });
+      if (event.streams[0]) {
+        this.peerConnections.get(participantId)!.stream = event.streams[0];
+        streams.set(participantId, event.streams[0]);
+      }
+      this.onStreamUpdate(streams);
+    };
+
+    return connection;
   }
 
   async initializeLocalStream(): Promise<MediaStream> {
@@ -25,74 +71,49 @@ export class WebRTCService {
     }
   }
 
-  async createPeerConnection(participantId: string): Promise<RTCPeerConnection> {
-    const peerConnection = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-      ]
-    });
-
-    // Add local tracks to the peer connection
+  async addPeer(participantId: string): Promise<void> {
+    const connection = await this.setupPeerConnection(participantId);
+    
+    // Add local tracks to the connection
     if (this.localStream) {
       this.localStream.getTracks().forEach(track => {
         if (this.localStream) {
-          peerConnection.addTrack(track, this.localStream);
+          connection.addTrack(track, this.localStream);
         }
       });
     }
 
-    // Handle incoming streams
-    peerConnection.ontrack = (event) => {
-      this.onParticipantStreamHandler(participantId, event.streams[0]);
-    };
-
-    // Handle connection state changes
-    peerConnection.onconnectionstatechange = () => {
-      console.log(`Connection state for ${participantId}:`, peerConnection.connectionState);
-      if (peerConnection.connectionState === 'failed') {
-        toast.error(`Connection failed with participant ${participantId}`);
-        this.closePeerConnection(participantId);
-      }
-    };
-
-    this.peerConnections.set(participantId, peerConnection);
-    return peerConnection;
+    this.peerConnections.set(participantId, { connection, stream: null });
   }
 
-  async createOffer(participantId: string): Promise<RTCSessionDescriptionInit> {
-    const peerConnection = await this.createPeerConnection(participantId);
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-    return offer;
-  }
-
-  async handleAnswer(participantId: string, answer: RTCSessionDescriptionInit) {
-    const peerConnection = this.peerConnections.get(participantId);
-    if (peerConnection) {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-    }
-  }
-
-  async handleIceCandidate(participantId: string, candidate: RTCIceCandidateInit) {
-    const peerConnection = this.peerConnections.get(participantId);
-    if (peerConnection) {
-      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-    }
-  }
-
-  closePeerConnection(participantId: string) {
-    const peerConnection = this.peerConnections.get(participantId);
-    if (peerConnection) {
-      peerConnection.close();
+  removePeer(participantId: string): void {
+    const peer = this.peerConnections.get(participantId);
+    if (peer) {
+      peer.connection.close();
       this.peerConnections.delete(participantId);
     }
   }
 
-  closeAllConnections() {
-    this.peerConnections.forEach((_, participantId) => {
-      this.closePeerConnection(participantId);
+  async startScreenShare(): Promise<MediaStream> {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true
+      });
+      return screenStream;
+    } catch (error) {
+      console.error('Error sharing screen:', error);
+      toast.error('Failed to start screen sharing');
+      throw error;
+    }
+  }
+
+  cleanup(): void {
+    this.peerConnections.forEach((peer) => {
+      peer.connection.close();
     });
+    this.peerConnections.clear();
+    
     if (this.localStream) {
       this.localStream.getTracks().forEach(track => track.stop());
       this.localStream = null;
