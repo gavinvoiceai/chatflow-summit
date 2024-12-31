@@ -6,8 +6,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { deviceManager } from '@/services/deviceManager';
 import { toast } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export const VideoConferenceScreen = () => {
@@ -101,15 +99,6 @@ export const VideoConferenceScreen = () => {
         <ErrorBoundary>
           <VideoGrid participants={participants} />
         </ErrorBoundary>
-        
-        <Button
-          variant="ghost"
-          size="icon"
-          className="sidebar-toggle lg:hidden"
-          onClick={toggleSidebar}
-        >
-          {isSidebarOpen ? <ChevronRight /> : <ChevronLeft />}
-        </Button>
 
         <MeetingControls
           audioEnabled={audioEnabled}
