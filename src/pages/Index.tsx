@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { VideoGrid } from '@/components/VideoGrid';
 import { ControlBar } from '@/components/ControlBar';
 import { AIPanel } from '@/components/AIPanel';
-import { VoiceCommandIndicator } from '@/components/VoiceCommandIndicator';
 import { useToast } from '@/components/ui/use-toast';
 
 const mockParticipants = [
@@ -115,10 +114,10 @@ const Index = () => {
   }, [voiceCommandsEnabled]);
 
   return (
-    <div className="main-container">
+    <div className="conference-container">
       <VideoGrid participants={mockParticipants} />
       
-      <div className="right-panel">
+      <div className="sidebar">
         <AIPanel
           transcript={mockTranscript}
           actionItems={mockActionItems}
@@ -126,23 +125,20 @@ const Index = () => {
         />
       </div>
 
-      <VoiceCommandIndicator
-        isListening={isListening}
-        transcript={transcript}
-      />
-      
-      <ControlBar
-        audioEnabled={audioEnabled}
-        videoEnabled={videoEnabled}
-        voiceCommandsEnabled={voiceCommandsEnabled}
-        isListening={isListening}
-        onToggleAudio={() => setAudioEnabled(!audioEnabled)}
-        onToggleVideo={() => setVideoEnabled(!videoEnabled)}
-        onToggleVoiceCommands={() => setVoiceCommandsEnabled(!voiceCommandsEnabled)}
-        onShareScreen={() => console.log('Share screen')}
-        onOpenChat={() => console.log('Open chat')}
-        onOpenSettings={() => console.log('Open settings')}
-      />
+      <div className="controls-container">
+        <ControlBar
+          audioEnabled={audioEnabled}
+          videoEnabled={videoEnabled}
+          voiceCommandsEnabled={voiceCommandsEnabled}
+          isListening={isListening}
+          onToggleAudio={() => setAudioEnabled(!audioEnabled)}
+          onToggleVideo={() => setVideoEnabled(!videoEnabled)}
+          onToggleVoiceCommands={() => setVoiceCommandsEnabled(!voiceCommandsEnabled)}
+          onShareScreen={() => console.log('Share screen')}
+          onOpenChat={() => console.log('Open chat')}
+          onOpenSettings={() => console.log('Open settings')}
+        />
+      </div>
     </div>
   );
 };
