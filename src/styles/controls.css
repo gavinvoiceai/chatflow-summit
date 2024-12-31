@@ -1,5 +1,6 @@
 .control-button {
-  @apply text-muted-foreground hover:text-accent transition-colors duration-200;
+  @apply text-accent hover:bg-accent/10;
+  @apply transition-all duration-200;
 }
 
 .control-button.active {
