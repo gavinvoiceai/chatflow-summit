@@ -3,12 +3,8 @@ import { TabNavigation } from './TabNavigation';
 import { Input } from './ui/input';
 import { Users } from 'lucide-react';
 
-interface TabProps {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  isActive: boolean;
-  onClick: () => void;
+interface SidebarProps {
+  children?: React.ReactNode;
 }
 
 const TranscriptPanel = () => (
@@ -36,7 +32,6 @@ const ParticipantPanel = () => (
       <h2 className="font-medium">Participants</h2>
     </div>
     <div className="space-y-2">
-      {/* Example participants, replace with actual data */}
       <div className="flex items-center justify-between">
         <span className="text-sm">You</span>
         <span className="text-xs text-primary">Host</span>
@@ -48,13 +43,13 @@ const ParticipantPanel = () => (
   </div>
 );
 
-export const Sidebar = () => {
+export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [activeTab, setActiveTab] = useState('transcript');
   
   const renderContent = () => {
     switch (activeTab) {
       case 'transcript':
-        return <TranscriptPanel />;
+        return children || <TranscriptPanel />;
       case 'actions':
         return <ActionPanel />;
       case 'participants':
