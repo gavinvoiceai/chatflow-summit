@@ -8,6 +8,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TranscriptPanel } from '@/components/TranscriptPanel';
+import { ChatPanel } from '@/components/ChatPanel';
 
 export const VideoConferenceScreen = () => {
   const { meetingId } = useParams();
@@ -89,6 +90,34 @@ export const VideoConferenceScreen = () => {
     }
   ] : [];
 
+  const [activeTab, setActiveTab] = useState('transcript');
+  const [unreadChats, setUnreadChats] = useState(0);
+  const [messages, setMessages] = useState([]);
+
+  const handleTabChange = (tab: string) => {
+    if (tab === 'chat') {
+      setUnreadChats(0);
+    }
+    setActiveTab(tab);
+  };
+
+  const handleNewMessage = (content: string) => {
+    const newMessage = {
+      id: Date.now().toString(),
+      sender: 'You',
+      content,
+      timestamp: new Date()
+    };
+    setMessages((prev) => [...prev, newMessage]);
+  };
+
+  // Increment unread count when new messages arrive and we're not on the chat tab
+  useEffect(() => {
+    if (activeTab !== 'chat' && messages.length > 0) {
+      setUnreadChats((prev) => prev + 1);
+    }
+  }, [messages.length]);
+
   return (
     <div className="flex h-screen bg-background">
       <div className="flex-1 relative">
@@ -116,11 +145,12 @@ export const VideoConferenceScreen = () => {
 
       {!isMobile && (
         <div className="w-80 border-l border-border/10 bg-background/95 backdrop-blur-sm">
-          <Tabs defaultValue="transcript" className="h-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
             <TabsList className="w-full justify-start px-2 border-b border-border/10">
               <TabsTrigger value="transcript">Transcript</TabsTrigger>
               <TabsTrigger value="actions">Actions</TabsTrigger>
               <TabsTrigger value="participants">Participants</TabsTrigger>
+              <TabsTrigger value="chat">Chat</TabsTrigger>
             </TabsList>
 
             <TabsContent value="transcript" className="h-[calc(100%-48px)] overflow-y-auto">
@@ -134,6 +164,12 @@ export const VideoConferenceScreen = () => {
             </TabsContent>
             <TabsContent value="participants" className="h-[calc(100%-48px)] overflow-y-auto">
               <div className="p-4">Participants</div>
+            </TabsContent>
+            <TabsContent value="chat" className="h-[calc(100%-48px)] overflow-y-auto">
+              <ChatPanel 
+                messages={messages}
+                onSendMessage={handleNewMessage}
+              />
             </TabsContent>
           </Tabs>
         </div>
