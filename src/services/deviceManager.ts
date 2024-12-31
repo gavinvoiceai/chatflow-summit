@@ -1,17 +1,22 @@
 interface VideoConstraints {
-  width: { ideal: number };
-  height: { ideal: number };
-  frameRate: { ideal: number };
+  width?: { ideal: number };
+  height?: { ideal: number };
+  frameRate?: { ideal: number };
+  deviceId?: string;
+}
+
+interface AudioConstraints {
+  deviceId?: string;
 }
 
 interface StreamConfig {
   video: VideoConstraints | boolean;
-  audio: boolean;
+  audio: AudioConstraints | boolean;
 }
 
 class DeviceManager {
   private currentStream: MediaStream | null = null;
-  private videoConstraints: VideoConstraints = {
+  private defaultVideoConstraints: VideoConstraints = {
     width: { ideal: 1280 },
     height: { ideal: 720 },
     frameRate: { ideal: 30 }
@@ -23,7 +28,7 @@ class DeviceManager {
       this.cleanup();
       
       const streamConfig: StreamConfig = config || {
-        video: this.videoConstraints,
+        video: this.defaultVideoConstraints,
         audio: true
       };
 

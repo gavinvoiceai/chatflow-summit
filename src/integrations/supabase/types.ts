@@ -147,6 +147,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          camera_enabled: boolean | null
+          created_at: string | null
+          id: string
+          microphone_enabled: boolean | null
+          preferred_camera_id: string | null
+          preferred_microphone_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          camera_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          microphone_enabled?: boolean | null
+          preferred_camera_id?: string | null
+          preferred_microphone_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          camera_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          microphone_enabled?: boolean | null
+          preferred_camera_id?: string | null
+          preferred_microphone_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

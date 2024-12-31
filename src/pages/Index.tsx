@@ -9,16 +9,17 @@ import { TranscriptPanel } from '@/components/TranscriptPanel';
 import { ClosedCaptions } from '@/components/ClosedCaptions';
 import { deviceManager } from '@/services/deviceManager';
 import { toast } from "sonner";
-import { LobbyView } from '@/components/meeting/LobbyView';
+import { PreMeetingSetup } from '@/components/meeting/PreMeetingSetup';
 import { MeetingControls } from '@/components/meeting/MeetingControls';
 import { EndMeetingDialog } from '@/components/meeting/EndMeetingDialog';
+import { supabase } from "@/integrations/supabase/client";
 
-type MeetingState = 'lobby' | 'connecting' | 'inProgress' | 'ending';
+type MeetingState = 'setup' | 'connecting' | 'inProgress' | 'ending';
 
 const Index = () => {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [videoEnabled, setVideoEnabled] = useState(false);
-  const [meetingState, setMeetingState] = useState<MeetingState>('lobby');
+  const [meetingState, setMeetingState] = useState<MeetingState>('setup');
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [participants, setParticipants] = useState([
     { id: 'local', name: 'You', stream: null, videoEnabled: false, audioEnabled: false, isMainSpeaker: true }
@@ -74,13 +75,25 @@ const Index = () => {
   const startMeeting = async () => {
     try {
       setMeetingState('connecting');
-      const stream = await deviceManager.initializeDevices();
+      
+      // Create meeting in Supabase
+      const { data: meeting, error: meetingError } = await supabase
+        .from('meetings')
+        .insert({
+          host_id: (await supabase.auth.getUser()).data.user?.id,
+          is_active: true,
+        })
+        .select()
+        .single();
+
+      if (meetingError) throw meetingError;
+
       await initializeServices();
       
       if (webrtcService) {
         await webrtcService.initializeLocalStream();
         setParticipants(prev => prev.map(p => 
-          p.id === 'local' ? { ...p, stream, videoEnabled: true, audioEnabled: true } : p
+          p.id === 'local' ? { ...p, videoEnabled: true, audioEnabled: true } : p
         ));
         setVideoEnabled(true);
         setAudioEnabled(true);
@@ -91,7 +104,7 @@ const Index = () => {
     } catch (error) {
       console.error('Error starting meeting:', error);
       toast.error("Failed to start meeting");
-      setMeetingState('lobby');
+      setMeetingState('setup');
     }
   };
 
@@ -160,8 +173,8 @@ const Index = () => {
     };
   }, [webrtcService, transcriptionService]);
 
-  if (meetingState === 'lobby') {
-    return <LobbyView onStartMeeting={startMeeting} />;
+  if (meetingState === 'setup') {
+    return <PreMeetingSetup onJoinMeeting={startMeeting} />;
   }
 
   return (
