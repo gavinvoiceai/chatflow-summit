@@ -32,8 +32,8 @@ export const ControlBar: React.FC<ControlBarProps> = ({
   children
 }) => {
   return (
-    <div className="control-bar">
-      <div className="flex items-center gap-2">
+    <div className="fixed bottom-6 w-full flex justify-center z-50">
+      <div className="control-bar">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -42,6 +42,8 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onToggleAudio}
               className={cn(
                 "control-button",
+                "!text-[#00FF9D]",
+                "hover:bg-[#00FF9D]/10",
                 !audioEnabled && "text-destructive",
                 audioEnabled && "active"
               )}
@@ -62,6 +64,8 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               onClick={onToggleVideo}
               className={cn(
                 "control-button",
+                "!text-[#00FF9D]",
+                "hover:bg-[#00FF9D]/10",
                 !videoEnabled && "text-destructive",
                 videoEnabled && "active"
               )}
@@ -80,7 +84,11 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               variant="ghost" 
               size="icon" 
               onClick={onShareScreen}
-              className="control-button"
+              className={cn(
+                "control-button",
+                "!text-[#00FF9D]",
+                "hover:bg-[#00FF9D]/10"
+              )}
             >
               <Monitor className="h-5 w-5" />
             </Button>
@@ -94,7 +102,11 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               variant="ghost" 
               size="icon" 
               onClick={onOpenChat}
-              className="control-button"
+              className={cn(
+                "control-button",
+                "!text-[#00FF9D]",
+                "hover:bg-[#00FF9D]/10"
+              )}
             >
               <MessageSquare className="h-5 w-5" />
             </Button>
@@ -108,7 +120,11 @@ export const ControlBar: React.FC<ControlBarProps> = ({
               variant="ghost" 
               size="icon" 
               onClick={onOpenSettings}
-              className="control-button"
+              className={cn(
+                "control-button",
+                "!text-[#00FF9D]",
+                "hover:bg-[#00FF9D]/10"
+              )}
             >
               <Settings className="h-5 w-5" />
             </Button>
