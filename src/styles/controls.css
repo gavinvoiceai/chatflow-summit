@@ -1,14 +1,19 @@
 .controls-container {
-  @apply fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center z-50;
+  @apply fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center justify-center z-50;
   width: max-content;
 }
 
 .control-bar {
-  @apply flex items-center justify-center gap-2 p-4 rounded-full bg-muted/80 backdrop-blur-sm border border-border/10;
+  @apply flex items-center justify-center gap-4 px-6 py-3 rounded-full bg-background/80 backdrop-blur-sm;
 }
 
 .control-button {
   @apply p-2 rounded-full hover:bg-accent/10 transition-colors duration-200;
+}
+
+/* End meeting button styling */
+.end-meeting-button {
+  @apply ml-4 bg-destructive hover:bg-destructive/90 text-destructive-foreground px-4 py-2 rounded-full;
 }
 
 @media (max-width: 767px) {

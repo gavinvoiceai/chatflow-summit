@@ -53,11 +53,10 @@ export const MeetingControls: React.FC<MeetingControlsProps> = ({
         </ControlBar>
         <Button
           variant="destructive"
-          size="icon"
-          className="ml-2"
           onClick={onEndMeeting}
+          className="end-meeting-button"
         >
-          <X className="h-5 w-5" />
+          End Meeting
         </Button>
       </div>
     </div>
